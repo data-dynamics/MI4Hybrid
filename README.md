@@ -1,4 +1,4 @@
-# Hybrid2015
+# MI4Hybrid2 (An Informal Version)
 
 1. StateSpace.m is a class for state space models with noise specification.
    * UnStateSpace.m is a class for state space models with noise specification and parameter uncertainty.
