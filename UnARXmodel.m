@@ -1,8 +1,8 @@
 classdef UnARXmodel < ARXmodel
     
-    % This class represents a discrete-time ARX model with parameter
-    %   uncertainty, that is, A and C matrices of a system mode are in
-    %   the form of A = A_true + delta_A and C = C_true + delta_C.
+    % This class represents a (possibly switched) discrete-time ARX model
+    %   with parameter uncertainty, that is, A and C matrices of a system
+    %   mode are in the form of A = A_true + delta_A, C = C_true + delta_C.
     %
     % Syntax:
     %   sys=UnARXmodel(sys,d_A,d_C);

@@ -1,9 +1,10 @@
 classdef StateSpace
     
     % The class represents a discrete-time (possibly switched) state-space model.
-    % A general discrete-time state-space model has the form:
-    %   x[k+1] = A[k]*x[k] + B[k]*u[k] + g + Ep*pn[k]
-    %   y[k] = C[k]*x[k] + D[k]*u[k] + f
+    % A general discrete-time state-space model with a switching sequence sigma
+    % has the following form:
+    %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + g[sigma[k]] + Ep*pn[k]
+    %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + f[sigma[k]]
     %   y_n[k] = y[k] + Em*mn[k]
     % where pn is the process noise and mn is the measurement noise.
     %

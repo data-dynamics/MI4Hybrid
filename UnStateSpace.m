@@ -1,9 +1,9 @@
 classdef UnStateSpace < StateSpace
     
-    % This class represents a discrete-time state-space model with parameter
-    %   uncertainty, that is, A, B, C, and D matrices of a system mode are in
-    %   the form of A = A_true + delta_A, B = B_true + delta_B, C = C_true +
-    %   delta_C, and D = D_true + delta_D.
+    % This class represents a (possibly switched) discrete-time state-space
+    % model with parameter uncertainty, that is, A, B, C, and D matrices of
+    % a system mode are in the form of A = A_true + delta_A, B = B_true +
+    % delta_B, C = C_true + delta_C, and D = D_true + delta_D.
     %
     % Syntax:
     %   sys=UnStateSpace(sys,d_A,d_B,d_C,d_D);

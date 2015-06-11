@@ -1,8 +1,9 @@
 classdef ARXmodel
     
     % The class represents a discrete-time (possibly switched) ARX model.
-    % A general discrete-time ARX model has the form:
-    %   y[k] = A[k]*y1[i-nA:i-1] + C[k]*y1[i-nC:i-1] + f + Ep*pn[k]
+    % A general discrete-time ARX model with a switching sequence sigma has
+    % the following form:
+    %   y[k] = A[sigma[k]]*y1[k-nA:k-1] + C[sigma[k]]*y1[k-nC:k-1] + f[sigma[k]] + Ep*pn[k]
     %   y_n[k] = y[k] + Em*mn[k]
     % where pn is the process noise and mn is the measurement noise.
     %
