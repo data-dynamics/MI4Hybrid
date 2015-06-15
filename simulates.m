@@ -1,4 +1,4 @@
-function [y,p_noise,m_noise,switchseq]=simulates(sys,ini_cond,input,T,pn_bound,mn_bound,flag,switchseq)
+function [y,p_noise,m_noise,switchseq]=simulates(sys,input,T,ini_cond,pn_bound,mn_bound,flag,switchseq)
 
 % This function can simulate (switched) state-space models, (switched) ARX
 % models, and (not switched) polynomial models.
@@ -242,6 +242,7 @@ switchseq=ones(T-n,1);
 
 end
 
+%--------------Simulate Polynomial Model--------------
 function [y,p_noise,m_noise,switchseq]=poly_sim(sys,ini_cond,input,T,pn_bound,mn_bound,flag)
 
 % currently not used
