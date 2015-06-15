@@ -3,9 +3,11 @@ classdef ARXmodel
     % The class represents a discrete-time (possibly switched) ARX model.
     % A general discrete-time ARX model with a switching sequence sigma has
     % the following form:
-    %   y[k] = A[sigma[k]]*y1[k-nA:k-1] + C[sigma[k]]*y1[k-nC:k-1] + f[sigma[k]] + Ep*pn[k]
+    %   y[k] = (sum) A[sigma[k]]*y1[k-nA:k-1] + (sum) C[sigma[k]]*u[k-nC:k-1] + f[sigma[k]] + Ep*pn[k]
     %   y_n[k] = y[k] + Em*mn[k]
-    % where pn is the process noise and mn is the measurement noise.
+    % where pn is the process noise and mn is the measurement noise. A[sigma[k]]
+    % and C[sigma[k]] are regressors (i.e. 3D arrays) having nA and nC degrees
+    % respectively.
     %
     % Syntax:
     %   sys=ARXmodel(A,C);
@@ -43,12 +45,12 @@ classdef ARXmodel
         function sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em)
             
             % Check A and C.
-            if(size(A,3)~=size(C,3))
-                error('A and C must have the same number of matrices.');
+            if(size(A,4)~=size(C,4))
+                error('The first two arguments must represent the same number of modes.');
             elseif(size(A,1)~=size(C,1))
-                error('A and C are not consistent.');
+                error('The matrices described by the first two arguments are not consistent.');
             else
-                n_mode=size(A,3); % number of modes
+                n_mode=size(A,4); % number of modes
                 n_y=size(A,1); % number of outputs
             end
             
@@ -90,7 +92,7 @@ classdef ARXmodel
                 warning('Input norm type of measurement noise is a scalar, converted to a vector with identical entries.');
             end
             if(length(f)==1&&(n_y+n_mode>2))
-                f=ones(size(A,1),size(A,3))*f;
+                f=ones(size(A,1),n_mode)*f;
                 warning('Input additive constant for outputs is a scalar, converted to a matrix with identical entries.');
             end
             
@@ -111,8 +113,8 @@ classdef ARXmodel
             
             % Assign values after checking.
             for i=1:n_mode
-                sys.mode(i).A=A(:,:,i);
-                sys.mode(i).C=C(:,:,i);
+                sys.mode(i).A=A(:,:,:,i);
+                sys.mode(i).C=C(:,:,:,i);
             end
             sys.Ep=Ep;
             sys.Em=Em;

@@ -32,8 +32,8 @@ classdef UnARXmodel < ARXmodel
                 sys0=varargin{1};
                 n_mode=size(sys0.mode,2);
                 for i=1:n_mode
-                    A(:,:,i)=sys0.mode(i).A;
-                    C(:,:,i)=sys0.mode(i).C;
+                    A(:,:,:,i)=sys0.mode(i).A;
+                    C(:,:,:,i)=sys0.mode(i).C;
                 end
                 f=sys0.f;
                 pn_norm=sys0.pn_norm;
@@ -49,7 +49,7 @@ classdef UnARXmodel < ARXmodel
                 A=varargin{1};
                 C=varargin{2};
                 n_y=size(C,1); % number of outputs
-                n_mode=size(A,3); % number of modes
+                n_mode=size(A,4); % number of modes
             end
             
             % Set up default values if parameters are not specified (not for model transfer).
@@ -115,8 +115,8 @@ classdef UnARXmodel < ARXmodel
             
             % Assign the uncertainty constraints.
             for i=1:n_mode
-                sys.d_mode(i).A=d_A(:,:,i);
-                sys.d_mode(i).C=d_C(:,:,i);
+                sys.d_mode(i).A=d_A(:,:,:,i);
+                sys.d_mode(i).C=d_C(:,:,:,i);
             end
             
         end
