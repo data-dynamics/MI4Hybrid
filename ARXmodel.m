@@ -111,6 +111,27 @@ classdef ARXmodel
                 error('The factor (matrix) for measurement noise is not correct.');
             end
             
+            % Make the 3rd dimension of A and C to be the same by adding zero
+            % columns in order to easily run the simulation.
+            if(size(A,3)>size(C,3))
+                current_deg=size(C,3);
+                n_in=size(C,2);
+                add_deg=size(A,3)-size(C,3);
+                for i=1:n_mode
+                    for j=1:add_deg
+                        C(:,:,current_deg+j,i)=zeros(n_y,n_in);
+                    end
+                end
+            elseif(size(A,3)<size(C,3))
+                current_deg=size(A,3);
+                add_deg=size(C,3)-size(A,3);
+                for i=1:n_mode
+                    for j=1:add_deg
+                        A(:,:,current_deg+j,i)=zeros(n_y,n_y);
+                    end
+                end
+            end
+            
             % Assign values after checking.
             for i=1:n_mode
                 sys.mode(i).A=A(:,:,:,i);
