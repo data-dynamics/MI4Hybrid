@@ -49,6 +49,8 @@ classdef ARXmodel
                 error('The first two arguments must represent the same number of modes.');
             elseif(size(A,1)~=size(C,1))
                 error('The matrices described by the first two arguments are not consistent.');
+            elseif(size(A,1)~=size(A,2))
+                error('The first argument must be square matrices.');
             else
                 n_mode=size(A,4); % number of modes
                 n_y=size(A,1); % number of outputs
