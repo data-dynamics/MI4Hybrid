@@ -162,7 +162,7 @@ for i=n+1:T
     % Note: u(:,i) is not included when calculating y(:,i).
     y(:,i)=zeros(out_dim,1);
     for j=1:n
-        y(:,i)=y(:,i)+sys.mode(switchseq(i-n)).A(:,:,j)*y(:,i-n+j-1)+sys.mode(switchseq(i-n)).C(:,:,j)*input(:,i-n+j-1);
+        y(:,i)=y(:,i)+sys.mode(switchseq(i-n)).A(:,:,j)*y(:,i-j)+sys.mode(switchseq(i-n)).C(:,:,j)*input(:,i-j);
     end
     y(:,i)=y(:,i)+sys.f(:,switchseq(i))+sys.Ep*p_noise(:,i); % add process noise
 end
@@ -231,7 +231,7 @@ for i=n+1:T
     % Note: u(:,i) is not included when calculating y(:,i).
     y(:,i)=zeros(out_dim,1);
     for j=1:n
-        y(:,i)=y(:,i)+sys.mode.A(:,:,j)*y(:,i-n+j-1)+sys.mode.C(:,:,j)*input(:,i-n+j-1);
+        y(:,i)=y(:,i)+sys.mode.A(:,:,j)*y(:,i-j)+sys.mode.C(:,:,j)*input(:,i-j);
     end
     y(:,i)=y(:,i)+sys.f+sys.Ep*p_noise(:,i); % add process noise
 end
