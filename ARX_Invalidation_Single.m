@@ -40,21 +40,29 @@ M2=zeros(n_y,n_y*T);
 num_loop=T-degree;
 buffer=eye(n_y);
 for i=1:degree
-    buffer(:,n_y*i+1)=sys.mode.A(:,:,i);
+    buffer(:,n_y*i+1:n_y*(i+1))=sys.mode.A(:,:,i);
 end
 for i=1:num_loop
     M2(1+n_y*(i-1):n_y*i,1+n_y*(i-1):(degree+i)*n_y)=buffer;
 end
 M=[M1 M2];
 % Construct b.
-b=zeros(n_y,n_y*(T-degree));
+b=zeros(n_y,T-degree);
 for i=1:degree
     b=b+sys.mode.A(:,:,i)*y(:,degree+1-i:T-i)+sys.mode.C(:,:,i)*input(:,degree+1-i:T-i);
 end
-F=bsxfun(zeros(n_y,num_loop),f);
+F=bsxfun(@plus,zeros(n_y,num_loop),f);
 b=b-y(:,degree+1:T)+F;
 b=reshape(b,[],1);
 
 % Check if b is in the range of M with the constraint of bounded norm of n.
-P=sdpavr((T-nA+1)*n_in+T*n_in,1);
-C=[];
+n=sdpvar((T-degree)*n_y+T*n_y,1);
+C=[M*n==b, norm(n,inf)<=2.9];
+tic
+solution=optimize(C);
+toc
+if(solution.problem==0)
+    disp('Valid');
+elseif(solution.problem==1)
+    disp('Invalid');
+end
