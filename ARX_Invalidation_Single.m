@@ -16,8 +16,8 @@ f=[0;0];
 % Set up noise bound.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[0 0]*10;
-mn_bound=[0 0]*10;
+pn_bound=[2 2];
+mn_bound=[2 2];
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
@@ -41,10 +41,11 @@ ini_cond=[];
 M1=eye(n_y*(T-degree));
 M2=zeros(n_y*(T-degree),n_y*T);
 num_loop=T-degree;
-buffer=-eye(n_y);
+buffer=zeros(n_y,n_y*(degree+1));
 for i=1:degree
-    buffer(:,n_y*i+1:n_y*(i+1))=sys.mode.A(:,:,i)*A_factor;
+    buffer(:,n_y*(i-1)+1:n_y*i)=sys.mode.A(:,:,degree-i+1)*A_factor;
 end
+buffer(:,n_y*degree+1:n_y*(degree+1))=-eye(n_y);
 for i=1:num_loop
     M2(1+n_y*(i-1):n_y*i,1+n_y*(i-1):(degree+i)*n_y)=buffer;
 end
@@ -60,10 +61,10 @@ b=reshape(b,[],1);
 
 % Check if b is in the range of M with the constraint of bounded norm of n.
 n=sdpvar((T-degree)*n_y+T*n_y,1);
-C=[M*n==b, norm(n,inf)<=0];
+Cons=[M*n==b, norm(n,inf)<=2];
 tic
-options =sdpsettings('verbose',1);
-solution=optimize(C,[],options);
+options =sdpsettings('verbose',1,'solver','mosek');
+solution=optimize(Cons,[],options);
 toc
 if(solution.problem==0)
     disp('Valid');
