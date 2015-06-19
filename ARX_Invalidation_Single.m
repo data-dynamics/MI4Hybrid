@@ -3,8 +3,8 @@
 
 clear all
 
-A_factor=1;
-C_factor=1;
+A_factor=0.9;
+C_factor=0.9;
 
 % Define system parameter.
 A(:,:,1)=[0.4747 0.0628;-0.3424 1.2250];
@@ -16,8 +16,8 @@ f=[0;0];
 % Set up noise bound.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[2 2];
-mn_bound=[2 2];
+pn_bound=[12 8];
+mn_bound=[10 5];
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
@@ -32,6 +32,17 @@ input=[zeros(n_in,degree) ones(n_in,T-degree)];
 
 % Set up initial conditions if needed.
 ini_cond=[];
+
+
+
+
+
+
+count=0;
+for i=1:20
+
+
+
 
 % Run simulation to obtain I/O data.
 [y,p_noise,m_noise,~]=simulates(sys,input,T,ini_cond,pn_bound,mn_bound);
@@ -61,7 +72,7 @@ b=reshape(b,[],1);
 
 % Check if b is in the range of M with the constraint of bounded norm of n.
 n=sdpvar((T-degree)*n_y+T*n_y,1);
-Cons=[M*n==b, norm(n,inf)<=2];
+Cons=[M*n==b, norm(n(1:2:n_y*(T-degree)),inf)<=12, norm(n(2:2:n_y*(T-degree)),inf)<=8, norm(n(n_y*(T-degree)+1:2:end),inf)<=10, norm(n(n_y*(T-degree)+2:2:end),inf)<=5];
 tic
 options =sdpsettings('verbose',1,'solver','mosek');
 solution=optimize(Cons,[],options);
@@ -70,4 +81,13 @@ if(solution.problem==0)
     disp('Valid');
 elseif(solution.problem==1)
     disp('Invalid');
+    count=count+1;
 end
+
+
+
+
+
+
+end
+count
