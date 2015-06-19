@@ -3,8 +3,8 @@
 
 clear all
 
-A_factor=0.9;
-C_factor=0.9;
+A_factor=1;
+C_factor=1;
 
 % Define system parameter.
 A(:,:,1)=[0.4747 0.0628;-0.3424 1.2250];
