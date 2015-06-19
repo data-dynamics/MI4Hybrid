@@ -3,6 +3,10 @@
 
 clear all
 
+% Change this to change system parameters for the invalidation test.
+% This will not change the generated noisy data, but only influence the invalidation test.
+% e.g. 10% change of parameters means A_factor=0.9 and C_factor=0.9.
+% No need to care about f because f is a zero vector in this example.
 A_factor=1;
 C_factor=1;
 
@@ -16,8 +20,8 @@ f=[0;0];
 % Set up noise bound.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[12 8];
-mn_bound=[10 5];
+pn_bound=[12 8];    % The process noise bound for data generation only
+mn_bound=[10 5];    % The measurement noise bound for data generation only
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
@@ -72,7 +76,11 @@ b=reshape(b,[],1);
 
 % Check if b is in the range of M with the constraint of bounded norm of n.
 n=sdpvar((T-degree)*n_y+T*n_y,1);
+
+% You can change the noise bound for invalidation test.
 Cons=[M*n==b, norm(n(1:2:n_y*(T-degree)),inf)<=12, norm(n(2:2:n_y*(T-degree)),inf)<=8, norm(n(n_y*(T-degree)+1:2:end),inf)<=10, norm(n(n_y*(T-degree)+2:2:end),inf)<=5];
+
+
 tic
 options =sdpsettings('verbose',1,'solver','mosek');
 solution=optimize(Cons,[],options);
