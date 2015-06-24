@@ -18,7 +18,7 @@ In the folder "Functions":
 
 1. bounded_noise.m is a function generates l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
 
-2. simulates.m is a simulation function which will simulate the systems using the models we made.
+2. simulates.m is a simulation function which will simulate the systems using the models described by the system classes.
 
 3. InvalidationARX.m is a function that can apply the invalidation algorithm to an ARX model.
 
