@@ -20,6 +20,8 @@ In the folder "Functions":
 
 2. simulates.m is a simulation function which will simulate the systems using the models we made.
 
+3. InvalidationARX.m is a function that can apply the invalidation algorithm to an ARX model.
+
 Outside of the folders:
 
 6. ARX_Invalidation_Single.m is a file running for testing the algorithm of system invalidation. The system model used in this code is an ARX model with a single mode (i.e. only one submodel).
