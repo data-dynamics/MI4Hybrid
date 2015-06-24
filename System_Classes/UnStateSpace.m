@@ -61,7 +61,8 @@ classdef UnStateSpace < StateSpace
                 n_mode=size(A,3); % number of modes
             end
             
-            % Set up default values if parameters are not specified (not for model transfer).
+            % Set up default values if parameters are not specified (not
+            % for model transfer).
             if(nargin==4)
                 g=zeros(n,n_mode);
                 f=zeros(n_y,n_mode);
@@ -126,24 +127,30 @@ classdef UnStateSpace < StateSpace
             % Convert scalars to vectors.
             if(length(d_A)==1&&length(A)~=1)
                 d_A=zeros(size(A))+d_A;
-                warning('The uncertainty constraints for the A matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the A matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             if(length(d_B)==1&&length(B)~=1)
                 d_B=zeros(size(B))+d_B;
-                warning('The uncertainty constraints for the B matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the B matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             if(length(d_C)==1&&length(C)~=1)
                 d_C=zeros(size(C))+d_C;
-                warning('The uncertainty constraints for the C matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the C matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             if(length(d_D)==1&&length(D)~=1)
                 d_D=zeros(size(D))+d_D;
-                warning('The uncertainty constraints for the D matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the D matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             
             % Check if the uncertainty is consistent with parameters.
-            if(~isequal(size(A),size(d_A))||~isequal(size(B),size(d_B))||~isequal(size(C),size(d_C))||~isequal(size(D),size(d_D)))
-                error('The uncertainty constraints cannot match with system parameters.');
+            if(~isequal(size(A),size(d_A))||~isequal(size(B),size(d_B))||...
+                    ~isequal(size(C),size(d_C))||~isequal(size(D),size(d_D)))
+                error(['The uncertainty constraints cannot match with '...
+                    'system parameters.']);
             end
             
             % Call the constructor of the super class.

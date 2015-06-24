@@ -66,13 +66,15 @@ classdef Unpolymodel < polymodel
             [m1,n1]=size(coeffmat);
             if(length(d_coeffmat)==1&&length(coeffmat)~=1)
                 d_coeffmat=zeros(m1,n1)+d_coeffmat;
-                warning('The uncertainty constraint for the coefficient matrix is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraint for the coefficient'...
+                ' matrix is a scalar, converted to an array with the same entries.']);
             end
             
             % Check if the uncertainty is consistent with coeffmat.
             [m2,n2]=size(d_coeffmat);
             if(m1~=m2||n1~=n2)
-                error('The uncertainty constraint for the coefficient matrix should have the same dimension as the coefficient matrix.');
+                error(['The uncertainty constraint for the coefficient '...
+                'matrix should have the same dimension as the coefficient matrix.']);
             end
             
             % Call the constructor of the super class.

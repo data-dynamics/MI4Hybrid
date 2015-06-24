@@ -2,6 +2,8 @@
 %   model with a single mode (i.e. only one submodel).
 
 clear all
+addpath Functions
+addpath System_Classes
 
 % Change this to change system parameters for the invalidation test.
 % This will not change the generated noisy data, but only influence the invalidation test.

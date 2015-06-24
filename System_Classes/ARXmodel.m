@@ -3,11 +3,11 @@ classdef ARXmodel
     % The class represents a discrete-time (possibly switched) ARX model.
     % A general discrete-time ARX model with a switching sequence sigma has
     % the following form:
-    %   y[k] = (sum) A[sigma[k]]*y1[k-nA:k-1] + (sum) C[sigma[k]]*u[k-nC:k-1] + f[sigma[k]] + Ep*pn[k]
+    %   y[k] = (sum_i) A[sigma[k]](i)*y1[k-i] + (sum_i) C[sigma[k]](i)*u[k-i]
+    %          + f[sigma[k]] + Ep*pn[k]
     %   y_n[k] = y[k] + Em*mn[k]
     % where pn is the process noise and mn is the measurement noise. A[sigma[k]]
-    % and C[sigma[k]] are regressors (i.e. 3D arrays) having nA and nC degrees
-    % respectively.
+    % and C[sigma[k]] are 3D arrays having nA and nC matrices respectively.
     %
     % Syntax:
     %   sys=ARXmodel(A,C);
@@ -25,9 +25,11 @@ classdef ARXmodel
         % A set of discrete-time ARX modes.
         % e.g. mode(i).A and mode(i).C represent the i-th mode.
         mode
-        % An n_y-by-1 column vector representing the norm types of process noise.
+        % An n_y-by-1 column vector representing the norm types of process
+        % noise.
         pn_norm
-        % An n_y-by-1 column vector representing the norm types of measurement noise.
+        % An n_y-by-1 column vector representing the norm types of measurement
+        % noise.
         mn_norm
         % f is an n_y-by-n_mode matrix.
         f
@@ -35,7 +37,8 @@ classdef ARXmodel
         Ep
         % Em is an n_y-by-n_y matrix for measurement noise.
         Em
-        % A mark (a string) stating that the model is a regular or switched ARX model.
+        % A mark (a string) stating that the model is a regular or switched
+        % ARX model.
         mark
     end
     
@@ -46,9 +49,11 @@ classdef ARXmodel
             
             % Check A and C.
             if(size(A,4)~=size(C,4))
-                error('The first two arguments must represent the same number of modes.');
+                error(['The first two arguments must represent the same '...
+                      'number of modes.']);
             elseif(size(A,1)~=size(C,1))
-                error('The matrices described by the first two arguments are not consistent.');
+                error(['The matrices described by the first two arguments'...
+                      ' are not consistent.']);
             elseif(size(A,1)~=size(A,2))
                 error('The first argument must be square matrices.');
             else
@@ -84,37 +89,45 @@ classdef ARXmodel
                 Em=1;
             end
             
-            % Covert a scalar (pn_norm or mn_norm) to a vector having the same entries.
+            % Covert a scalar (pn_norm or mn_norm) to a vector having the
+            % same entries.
             if(length(pn_norm)==1&&n_y>1)
                 pn_norm=ones(size(A,1),1)*pn_norm;
-                warning('Input norm type of process noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of process noise is a scalar,'...
+                        ' converted to a vector with identical entries.']);
             end
             if(length(mn_norm)==1&&n_y>1)
                 mn_norm=ones(size(A,1),1)*mn_norm;
-                warning('Input norm type of measurement noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of measurement noise is a '...
+                    'scalar, converted to a vector with identical entries.']);
             end
             if(length(f)==1&&(n_y+n_mode>2))
                 f=ones(size(A,1),n_mode)*f;
-                warning('Input additive constant for outputs is a scalar, converted to a matrix with identical entries.');
+                warning(['Input additive constant for outputs is a scalar'...
+                    ', converted to a matrix with identical entries.']);
             end
             
             % Check the noise parameters.
             if(length(pn_norm)~=n_y)
-                error('The number of norm types for process noise is not correct.');
+                error(['The number of norm types for process noise is not'...
+                      ' correct.']);
             elseif(length(mn_norm)~=n_y)
-                error('The number of norm types for measurement noise is not correct.');
+                error(['The number of norm types for measurement noise is'...
+                      ' not correct.']);
             end
             
             % Check Ep and Em
             if(Ep~=1&&(size(Ep,1)~=n_y||size(Ep,2)~=n_y))
-                error('The factor (matrix) for process noise is not correct.');
+                error(['The factor (matrix) for process noise is not '...
+                      'correct.']);
             end
             if(Em~=1&&(size(Em,1)~=n_y||size(Em,2)~=n_y))
-                error('The factor (matrix) for measurement noise is not correct.');
+                error(['The factor (matrix) for measurement noise is not'...
+                      ' correct.']);
             end
             
-            % Make the 3rd dimension of A and C to be the same by adding zero
-            % columns in order to easily run the simulation.
+            % Make the 3rd dimension of A and C to be the same by adding
+            % zeros in order to easily run the simulation.
             if(size(A,3)>size(C,3))
                 current_deg=size(C,3);
                 n_in=size(C,2);

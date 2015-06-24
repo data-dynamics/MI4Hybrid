@@ -23,11 +23,14 @@ classdef StateSpace
     %   n_mode -- number of modes
     properties(SetAccess=protected)
         % A set of discrete-time state-space modes.
-        % e.g. mode(i).A, mode(i).B, mode(i).C, and mode(i).D represent the i-th mode.
+        % e.g. mode(i).A, mode(i).B, mode(i).C, and mode(i).D represent the
+        % i-th mode.
         mode
-        % An n-by-1 column vector representing the norm types of process noise.
+        % An n-by-1 column vector representing the norm types of process
+        % noise.
         pn_norm
-        % An n_y-by-1 column vector representing the norm types of measurement noise.
+        % An n_y-by-1 column vector representing the norm types of measurement
+        % noise.
         mn_norm
         % Ep is an n-by-n matrix.
         Ep
@@ -37,7 +40,8 @@ classdef StateSpace
         g
         % f is an n_y-by-n_mode matrix.
         f
-        % A mark (a string) stating that the model is a regular or switched state-space model.
+        % A mark (a string) stating that the model is a regular or switched
+        % state-space model.
         mark
     end
     
@@ -50,7 +54,8 @@ classdef StateSpace
             if(size(A,3)~=size(B,3)||size(A,3)~=size(C,3)||size(A,3)~=size(D,3))
                 error('A, B, C, and D must have the same number of matrices.');
             elseif(size(A,1)~=size(A,2)||size(A,1)~=size(B,1))
-                error('A must be a (or a set of) square matrices, or A and B not consistent.');
+                error(['A must be a (or a set of) square matrices, or A '...
+                      'and B not consistent.']);
             elseif(size(C,2)~=size(A,1)||size(C,1)~=size(D,1))
                 error('C is not consistent with A or D.');
             else
@@ -88,38 +93,45 @@ classdef StateSpace
                 Em=1;
             end
             
-            % Covert a scalar (pn_norm or mn_norm) to a vector having the same entries.
+            % Covert a scalar (pn_norm or mn_norm) to a vector having the
+            % same entries.
             if(length(pn_norm)==1&&n>1)
                 pn_norm=ones(n,1)*pn_norm;
-                warning('Input norm type of process noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of process noise is a scalar,'...
+                        ' converted to a vector with identical entries.']);
             end
             if(length(mn_norm)==1&&n_y>1)
                 mn_norm=ones(n_y,1)*mn_norm;
-                warning('Input norm type of measurement noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of measurement noise is a '...
+                   'scalar, converted to a vector with identical entries.']);
             end
             if(length(f)==1&&(n_y+n_mode>2))
                 f=ones(n_y,n_mode)*f;
-                warning('Input additive constant for outputs is a scalar, converted to a matrix with identical entries.');
+                warning(['Input additive constant for outputs is a '...
+                   'scalar, converted to a matrix with identical entries.']);
             end
             if(length(g)==1&&(n+n_mode>2))
                 g=ones(n,n_mode)*g;
-                warning('Input additive constant for states is a scalar, converted to a matrix with identical entries.');
+                warning(['Input additive constant for states is a scalar'...
+                       ', converted to a matrix with identical entries.']);
             end
             
             % Check the noise parameters.
             if(length(pn_norm)~=n)
-                error('The number of norm types for process noise is not correct.');
+                error(['The number of norm types for process noise is not'...
+                      ' correct.']);
             end
             if(length(mn_norm)~=n_y)
-                error('The number of norm types for measurement noise is not correct.');
+                error(['The number of norm types for measurement noise is'...
+                      ' not correct.']);
             end
             
             % Check Ep and Em
             if(Ep~=1&&(size(Ep,1)~=n||size(Ep,2)~=n))
-                error('The factor (matrix) for process noise is not correct.');
+                error('The factor (matrix) for process noise is incorrect.');
             end
             if(Em~=1&&(size(Em,1)~=n_y||size(Em,2)~=n_y))
-                error('The factor (matrix) for measurement noise is not correct.');
+                error('The factor (matrix) for measurement noise is incorrect.');
             end
             
             % Assign values after checking.

@@ -245,10 +245,19 @@ end
 %--------------Simulate Polynomial Model--------------
 function [y,p_noise,m_noise,switchseq]=poly_sim(sys,ini_cond,input,T,pn_bound,mn_bound,flag)
 
-% currently not used
-y=0;
-p_noise=0;
-m_noise=0;
-switchseq=0;
+n=size(sys.coeffmat,1); % number of states/outputs
+n_i=size(sys.degmat,2)-n; % input dimension
+
+% Make the initial condition be zero if it's not specified by users.
+if(isempty(ini_cond))
+    ini_cond=zeros(out_dim,n);
+end
+
+
+
+
+
+
+
 
 end

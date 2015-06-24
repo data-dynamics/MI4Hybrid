@@ -27,9 +27,11 @@ classdef polymodel
         degmat
         % An n-by-n_m matrix.
         coeffmat
-        % An n-by-1 column vector representing the norm types of process noise.
+        % An n-by-1 column vector representing the norm types of process
+        % noise.
         pn_norm
-        % An n-by-1 column vector representing the norm types of measurement noise.
+        % An n-by-1 column vector representing the norm types of measurement
+        % noise.
         mn_norm
         % Ep is an n-by-n matrix.
         Ep
@@ -46,7 +48,8 @@ classdef polymodel
             % Check the consistency of degmat and coeffmat.
             [n,n_m]=size(coeffmat);
             if((size(degmat,1)~=n_m)||(size(degmat,2)-n<0))
-                error('The degree matrix and coefficient matrix are not consistent.');
+                error(['The degree matrix and coefficient matrix are' ...
+                      'not consistent.']);
             else
                 sys.mark='poly';
             end
@@ -62,30 +65,35 @@ classdef polymodel
                 Em=1;
             end
             
-            % Convert a scalar (pn_norm or mn_norm) to a vector having the same entries.
+            % Convert a scalar (pn_norm or mn_norm) to a vector having the
+            % same entries.
             if(length(pn_norm)==1&&n>1)
                 pn_norm=ones(n,1)*pn_norm;
-                warning('Input norm type of process noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of process noise is a scalar, '...
+                        'converted to a vector with identical entries.']);
             end
             if(length(mn_norm)==1&&n>1)
                 mn_norm=ones(n,1)*mn_norm;
-                warning('Input norm type of measurement noise is a scalar, converted to a vector with identical entries.');
+                warning(['Input norm type of measurement noise is a '...
+                   'scalar, converted to a vector with identical entries.']);
             end
             
             % Check the noise parameters.
             if(length(pn_norm)~=n)
-                error('The number of norm types for process noise is not correct.');
+                error(['The number of norm types for process noise is'...
+                      ' incorrect.']);
             end
             if(length(mn_norm)~=n)
-                error('The number of norm types for measurement noise is not correct.');
+                error(['The number of norm types for measurement noise'...
+                      ' is incorrect.']);
             end
             
             % Check Ep and Em
             if(Ep~=1&&(size(Ep,1)~=n||size(Ep,2)~=n))
-                error('The factor (matrix) for process noise is not correct.');
+                error('The factor (matrix) for process noise is incorrect.');
             end
             if(Em~=1&&(size(Em,1)~=n||size(Em,2)~=n))
-                error('The factor (matrix) for measurement noise is not correct.');
+                error('The factor (matrix) for measurement noise is incorrect.');
             end
             
             % Assign values to creat the model.

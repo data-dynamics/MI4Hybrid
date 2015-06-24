@@ -27,7 +27,8 @@ classdef UnARXmodel < ARXmodel
         % Constructor for a (switched) ARX model with uncertainty.
         function sys=UnARXmodel(varargin)
             
-            % To be able to convert a system model from superclass to subclass.
+            % To be able to convert a system model from superclass to 
+            % subclass.
             if(nargin==3&&isa(varargin{1},'ARXmodel'))
                 sys0=varargin{1};
                 n_mode=size(sys0.mode,2);
@@ -52,7 +53,8 @@ classdef UnARXmodel < ARXmodel
                 n_mode=size(A,4); % number of modes
             end
             
-            % Set up default values if parameters are not specified (not for model transfer).
+            % Set up default values if parameters are not specified (not
+            % for model transfer).
             if(nargin==2)
                 f=zeros(n_y,n_mode);
                 pn_norm=zeros(n_y,1)+inf;
@@ -98,16 +100,19 @@ classdef UnARXmodel < ARXmodel
             % Convert scalars to vectors.
             if(length(d_A)==1&&length(A)~=1)
                 d_A=zeros(size(A))+d_A;
-                warning('The uncertainty constraints for the A matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the A matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             if(length(d_C)==1&&length(C)~=1)
                 d_C=zeros(size(C))+d_C;
-                warning('The uncertainty constraints for the C matrices is a scalar, converted to an array with the same entries.');
+                warning(['The uncertainty constraints for the C matrices'...
+                ' is a scalar, converted to an array with the same entries.']);
             end
             
             % Check if the uncertainty is consistent with parameters.
             if(~isequal(size(A),size(d_A))||~isequal(size(C),size(d_C)))
-                error('The uncertainty constraints cannot match with system parameters.');
+                error(['The uncertainty constraints cannot match with '...
+                      'system parameters.']);
             end
             
             % Call the constructor of the super class.
