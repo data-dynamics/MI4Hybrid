@@ -1,4 +1,4 @@
-### MI4Hybrid2 (An Informal Version)
+#### MI4Hybrid2 (An Informal Version)
 
 #####In the folder "System_Classes":
 
@@ -24,4 +24,4 @@
 
 #####Outside of the folders:
 
-6. ARX_Invalidation_Single.m is a file running for testing the algorithm of system invalidation. The system model used in this code is an ARX model with a single mode (i.e. only one submodel).
+6. ARX_single_invalidation_example.m is a file running for testing the algorithm of system invalidation. The system model used in this code is an ARX model with a single mode (i.e. only one submodel).
