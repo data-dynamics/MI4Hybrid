@@ -75,18 +75,18 @@ classdef ARXmodel
                 pn_norm=zeros(n_y,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
                 f=zeros(n_y,n_mode);
-                Ep=1;
-                Em=1;
+                Ep=eye(n_y);
+                Em=eye(n_y);
             end
             if(nargin==3)
                 pn_norm=zeros(n_y,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
-                Ep=1;
-                Em=1;
+                Ep=eye(n_y);
+                Em=eye(n_y);
             end
             if(nargin==5)
-                Ep=1;
-                Em=1;
+                Ep=eye(n_y);
+                Em=eye(n_y);
             end
             
             % Covert a scalar (pn_norm or mn_norm) to a vector having the
@@ -117,13 +117,13 @@ classdef ARXmodel
             end
             
             % Check Ep and Em
-            if(Ep~=1&&(size(Ep,1)~=n_y||size(Ep,2)~=n_y))
+            if(size(Ep,1)~=n_y||size(Ep,2)~=n_y)
                 error(['The factor (matrix) for process noise is not '...
-                      'correct.']);
+                      'valid.']);
             end
-            if(Em~=1&&(size(Em,1)~=n_y||size(Em,2)~=n_y))
+            if(size(Em,1)~=n_y||size(Em,2)~=n_y)
                 error(['The factor (matrix) for measurement noise is not'...
-                      ' correct.']);
+                      ' valid.']);
             end
             
             % Make the 3rd dimension of A and C to be the same by adding
