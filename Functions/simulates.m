@@ -33,7 +33,7 @@ function [y,p_noise,m_noise,switchseq]=simulates(sys,input,T,ini_cond,pn_bound,m
 %   [y,p_noise,m_noise,switchseq]=simulates(sys,input,T,ini_cond,pn_bound,mn_bound,flag);
 %   [y,p_noise,m_noise,switchseq]=simulates(sys,input,T,ini_cond,pn_bound,mn_bound,flag,switchseq);
 %
-% Author: MI4Hybrid
+% Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: May 22nd, 2015
 
 % Set up default values if parameters are not specified.
