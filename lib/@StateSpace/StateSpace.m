@@ -1,8 +1,8 @@
 classdef StateSpace
     
-    % The class represents a discrete-time (possibly switched) state-space model.
-    % A general discrete-time state-space model with a switching sequence sigma
-    % has the following form:
+    % The class represents a discrete-time (possibly switched) state-space
+    % model. A general discrete-time state-space model with a switching
+    % sequence sigma has the following form:
     %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + g[sigma[k]] + Ep*pn[k]
     %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + f[sigma[k]]
     %   y_n[k] = y[k] + Em*mn[k]
@@ -13,6 +13,10 @@ classdef StateSpace
     %   sys=StateSpace(A,B,C,D,g,f);
     %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm);
     %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em);
+    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,input_norm,...
+    %                  input_bound);
+    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,input_norm,...
+    %                  input_bound,state_norm,state_bound);
     %
     % Author: MI4Hybrid
     % Date: May 22nd, 2015
@@ -20,6 +24,7 @@ classdef StateSpace
     % Notations:
     %   n -- number of states
     %   n_y -- number of outputs
+    %   n_i -- number of inputs
     %   n_mode -- number of modes
     properties(SetAccess=protected)
         % A set of discrete-time state-space modes.
@@ -29,13 +34,21 @@ classdef StateSpace
         % An n-by-1 column vector representing the norm types of process
         % noise.
         pn_norm
-        % An n_y-by-1 column vector representing the norm types of measurement
-        % noise.
+        % An n_y-by-1 column vector representing the norm types of
+        % measurement noise.
         mn_norm
         % Ep is an n-by-n matrix.
         Ep
         % Em is an n_y-by-n_y matrix.
         Em
+        % An n-by-1 column vector representing the norm types of states.
+        state_norm
+        % An n-by-1 column vector representing the norm bounds of states.
+        state_bound
+        % An n_i-by-n_i column vector representing the norm types of inputs.
+        input_norm
+        % An n_i-by-n_i column vector representing the norm bounds of inputs.
+        input_bound
         % g is an n-by-n_mode matrix.
         g
         % f is an n_y-by-n_mode matrix.
@@ -48,7 +61,8 @@ classdef StateSpace
     methods
         
         % If there is only one mode, the model is not switchable.
-        function sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em)
+        function sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,...
+                input_norm,input_bound,state_norm,state_bound)
             
             % Check A, B, C, and D.
             if(size(A,3)~=size(B,3)||size(A,3)~=size(C,3)||size(A,3)~=size(D,3))
@@ -62,6 +76,7 @@ classdef StateSpace
                 n_mode=size(A,3); % number of modes
                 n_y=size(C,1); % number of outputs
                 n=size(A,1); % number of states
+                n_i=size(B,2); % number of inputs
             end
             
             % Indicate the model type.
@@ -79,41 +94,83 @@ classdef StateSpace
                 f=zeros(n_y,n_mode);
                 pn_norm=zeros(n,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
-                Ep=1;
-                Em=1;
+                Ep=eye(n);
+                Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
+                input_bound=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+                state_bound=zeros(n,1)+inf;
             end
             if(nargin==6)
                 pn_norm=zeros(n,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
-                Ep=1;
-                Em=1;
+                Ep=eye(n);
+                Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
+                input_bound=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+                state_bound=zeros(n,1)+inf;
             end
             if(nargin==8)
-                Ep=1;
-                Em=1;
+                Ep=eye(n);
+                Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
+                input_bound=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+                state_bound=zeros(n,1)+inf;
+            end
+            if(nargin==10)
+                input_norm=zeros(n_i,1)+inf;
+                input_bound=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+                state_bound=zeros(n,1)+inf;
+            end
+            if(nargin==12)
+                state_norm=zeros(n,1)+inf;
+                state_bound=zeros(n,1)+inf;
             end
             
             % Covert a scalar (pn_norm or mn_norm) to a vector having the
             % same entries.
             if(length(pn_norm)==1&&n>1)
                 pn_norm=ones(n,1)*pn_norm;
-                warning(['Input norm type of process noise is a scalar,'...
+                warning(['Norm type of process noise is a scalar,'...
                         ' converted to a vector with identical entries.']);
             end
             if(length(mn_norm)==1&&n_y>1)
                 mn_norm=ones(n_y,1)*mn_norm;
-                warning(['Input norm type of measurement noise is a '...
+                warning(['Norm type of measurement noise is a '...
                    'scalar, converted to a vector with identical entries.']);
             end
             if(length(f)==1&&(n_y+n_mode>2))
                 f=ones(n_y,n_mode)*f;
-                warning(['Input additive constant for outputs is a '...
+                warning(['Additive constant for outputs is a '...
                    'scalar, converted to a matrix with identical entries.']);
             end
             if(length(g)==1&&(n+n_mode>2))
                 g=ones(n,n_mode)*g;
-                warning(['Input additive constant for states is a scalar'...
-                       ', converted to a matrix with identical entries.']);
+                warning(['Additive constant for states is a scalar, '...
+                    'converted to a matrix with identical entries.']);
+            end
+            if(length(input_norm)==1&&n_i>1)
+                input_norm=ones(n_i,1)*input_norm;
+                warning(['Input norm type is a scalar, converted to a'...
+                    ' vector with identical entries.']);
+            end
+            if(length(input_bound)==1&&n_i>1)
+                input_bound=ones(n_i,1)*input_bound;
+                warning(['Input bound is a scalar, converted to a'...
+                    ' vector with identical entries.']);
+            end
+            if(length(state_norm)==1&&n>1)
+                state_norm=ones(n,1)*state_norm;
+                warning(['Norm type of states is a scalar, converted'...
+                    ' to a vector with identical entries.']);
+            end
+            if(length(state_bound)==1&&n>1)
+                state_bound=ones(n,1)*state_bound;
+                warning(['Norm bound of states is a scalar, converted'...
+                    ' to a vector with identical entries.']);
             end
             
             % Check the noise parameters.
@@ -126,11 +183,25 @@ classdef StateSpace
                       ' not correct.']);
             end
             
+            % Check the state and input parameters.
+            if(length(input_norm)~=n_i)
+                error('The number of norm types for input is incorrect.');
+            end
+            if(length(input_bound)~=n_i)
+                error('The number of bounds for input is incorrect.');
+            end
+            if(length(state_norm)~=n)
+                error('The number of norm types for states is incorrect.');
+            end
+            if(length(state_bound)~=n)
+                error('The number of bounds for states is incorrect.');
+            end
+            
             % Check Ep and Em
-            if(Ep~=1&&(size(Ep,1)~=n||size(Ep,2)~=n))
+            if(size(Ep,1)~=n||size(Ep,2)~=n)
                 error('The factor (matrix) for process noise is incorrect.');
             end
-            if(Em~=1&&(size(Em,1)~=n_y||size(Em,2)~=n_y))
+            if(size(Em,1)~=n_y||size(Em,2)~=n_y)
                 error('The factor (matrix) for measurement noise is incorrect.');
             end
             
@@ -147,6 +218,10 @@ classdef StateSpace
             sys.mn_norm=mn_norm;
             sys.g=g;
             sys.f=f;
+            sys.input_norm=input_norm;
+            sys.input_bound=input_bound;
+            sys.state_norm=state_norm;
+            sys.state_bound=state_bound;
             
         end
         
