@@ -17,18 +17,18 @@ function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
 
 % Check if the system model is valid for this function.
 if(strcmp(sys.mark,'arx')~=1)
-    error('The input system model must be a non-switched ARX model.');
+    error('The system model must be a non-switched ARX model.');
 end
 % Check if the input and output are consistent.
 if(length(input)~=length(output))
-    error('The input and output are not consistent.');
+    error('The input length and output length are not consistent.');
 end
 % Check if the input is consistent with with the model.
 if(size(input,1)~=size(sys.mode.C,2))
     error('The input is not consistent with the model.');
 end
 % Check if the output is consistent with the model.
-if(size(output,1)~=size(sys.mode.A,2))
+if(size(output,1)~=size(sys.mode.A,1))
     error('The output is not consistent with the model.');
 end
 
@@ -76,7 +76,7 @@ options=sdpsettings('verbose',0,'solver','mosek');
 solution=optimize(constraints,[],options);
 if(solution.problem==0)
     result=true;
-elseif(solution.problem==1)
+else
     result=false;
 end
 
