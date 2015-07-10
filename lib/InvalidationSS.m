@@ -89,16 +89,22 @@ b=[b;output(:,T)-sys.mode.D*input(:,T)-sys.f];
 x=sdpvar(T*(2*n+n_y),1);
 constraints=[M*x==b];
 for i=1:n
-    constraints=[constraints,...
-        norm(x(i:n:n*T),sys.state_norm(i))<=sys.state_bound(i)];
+    if(sys.state_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(x(i:n:n*T),sys.state_norm(i))<=sys.state_bound(i)];
+    end
 end
 for i=1:n
-    constraints=[constraints,...
-        norm(x(n*T+i:n:n*2*T),sys.pn_norm(i))<=pn_bound(i)];
+    if(pn_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(x(n*T+i:n:n*2*T),sys.pn_norm(i))<=pn_bound(i)];
+    end
 end
 for i=1:n_y
-    constraints=[constraints,...
-        norm(x(2*n*T+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
+    if(mn_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(x(2*n*T+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
+    end
 end
 
 % Check the fesibility.

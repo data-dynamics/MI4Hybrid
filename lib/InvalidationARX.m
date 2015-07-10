@@ -65,12 +65,16 @@ b=reshape(b,[],1);
 n=sdpvar((T-degree)*n_y+T*n_y,1);
 constraints=[M*n==b];
 for i=1:n_y
-    constraints=[constraints,...
-        norm(n(i:n_y:n_y*(T-degree)),sys.pn_norm(i))<=pn_bound(i)];
+    if(pn_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(n(i:n_y:n_y*(T-degree)),sys.pn_norm(i))<=pn_bound(i)];
+    end
 end
 for i=1:n_y
-    constraints=[constraints,...
-        norm(n(n_y*(T-degree)+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
+    if(mn_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(n(n_y*(T-degree)+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
+    end
 end
 options=sdpsettings('verbose',0,'solver','mosek');
 solution=optimize(constraints,[],options);
