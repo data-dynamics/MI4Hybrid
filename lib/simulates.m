@@ -193,8 +193,8 @@ n=size(sys.mode.C,1); % dimension of output
 y=zeros(n,T); % pre-allocate memory
 x=ini_cond;
 for i=1:T
-    x=sys.mode.A*x+sys.mode.B*input(:,i)+sys.g+sys.Ep*p_noise(:,i);
     y(:,i)=sys.mode.C*x+sys.mode.D*input(:,i)+sys.f;
+    x=sys.mode.A*x+sys.mode.B*input(:,i)+sys.g+sys.Ep*p_noise(:,i);
 end
 y=y+sys.Em*m_noise;
 
