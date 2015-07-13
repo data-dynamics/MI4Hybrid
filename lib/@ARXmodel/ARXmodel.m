@@ -14,6 +14,7 @@ classdef ARXmodel
     %   sys=ARXmodel(A,C,f);
     %   sys=ARXmodel(A,C,f,pn_norm,mn_norm);
     %   sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em);
+    %   sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em,input_norm);
     %   
     % Author: MI4Hybrid
     % Date: May 22nd, 2015
@@ -21,6 +22,7 @@ classdef ARXmodel
     % Notations:
     %   n_y -- number of outputs
     %   n_mode -- number of modes
+    %   n_i -- number of inputs
     properties(SetAccess=protected)
         % A set of discrete-time ARX modes.
         % e.g. mode(i).A and mode(i).C represent the i-th mode.
@@ -37,6 +39,8 @@ classdef ARXmodel
         Ep
         % Em is an n_y-by-n_y matrix for measurement noise.
         Em
+        % An n_i-by-n_i column vector representing the norm types of inputs.
+        input_norm
         % A mark (a string) stating that the model is a regular or switched
         % ARX model.
         mark
@@ -45,20 +49,21 @@ classdef ARXmodel
     methods
         
         % If there is only one mode, the model is not switchable.
-        function sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em)
+        function sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em,input_norm)
             
             % Check A and C.
             if(size(A,4)~=size(C,4))
-                error(['The first two arguments must represent the same '...
-                      'number of modes.']);
+                error(['The first two arguments must represent the '...
+                    'same number of modes.']);
             elseif(size(A,1)~=size(C,1))
-                error(['The matrices described by the first two arguments'...
-                      ' are not consistent.']);
+                error(['The matrices described by the first two '...
+                    'arguments are not consistent.']);
             elseif(size(A,1)~=size(A,2))
                 error('The first argument must be square matrices.');
             else
                 n_mode=size(A,4); % number of modes
                 n_y=size(A,1); % number of outputs
+                n_i=size(C,2); % number of inputs
             end
             
             % Indicate the model type.
@@ -67,7 +72,7 @@ classdef ARXmodel
             elseif(n_mode==1)
                 sys.mark='arx';
             else
-                error('There must be at least one mode.');
+                error('There should be at least one mode.');
             end
             
             % Set up default values if the parameters are not specified.
@@ -77,16 +82,22 @@ classdef ARXmodel
                 f=zeros(n_y,n_mode);
                 Ep=eye(n_y);
                 Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
             end
             if(nargin==3)
                 pn_norm=zeros(n_y,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
                 Ep=eye(n_y);
                 Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
             end
             if(nargin==5)
                 Ep=eye(n_y);
                 Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
+            end
+            if(nargin==7)
+                input_norm=zeros(n_i,1)+inf;
             end
             
             % Covert a scalar (pn_norm or mn_norm) to a vector having the
@@ -106,14 +117,24 @@ classdef ARXmodel
                 warning(['Input additive constant for outputs is a scalar'...
                     ', converted to a matrix with identical entries.']);
             end
+            if(length(input_norm)==1&&n_i>1)
+                input_norm=ones(n_i,1)*input_norm;
+                warning(['Input norm type is a scalar, converted to a'...
+                    ' vector with identical entries.']);
+            end
             
             % Check the noise parameters.
-            if(length(pn_norm)~=n_y)
-                error(['The number of norm types for process noise is not'...
-                      ' correct.']);
-            elseif(length(mn_norm)~=n_y)
-                error(['The number of norm types for measurement noise is'...
-                      ' not correct.']);
+            if(length(pn_norm)~=n_y||~isvector(pn_norm))
+                error(['The number of norm types for process noise is'...
+                    ' not correct.']);
+            elseif(length(mn_norm)~=n_y||~isvector(mn_norm))
+                error(['The number of norm types for measurement noise'...
+                    ' is not correct.']);
+            end
+            
+            % Check the input parameters.
+            if(length(input_norm)~=n_i||~isvector(input_norm))
+                error('The number of norm types for input is incorrect.');
             end
             
             % Check Ep and Em
@@ -157,6 +178,7 @@ classdef ARXmodel
             sys.pn_norm=pn_norm;
             sys.mn_norm=mn_norm;
             sys.f=f;
+            sys.input_norm=input_norm;
             
         end
         
