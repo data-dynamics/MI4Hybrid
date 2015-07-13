@@ -68,7 +68,46 @@ elseif(num_arg==7)
     flag=0;
 end
 
+% Convert scalars to vectors.
+if(length(pn_bound)==1&&n>1)
+    pn_bound=ones(n,1)*pn_bound;
+    warning(['Bound for process noise is a scalar, converted to a '...
+        'vector with identical entries.']);
+end
+if(length(mn_bound)==1&&n_y>1)
+    mn_bound=ones(n_y,1)*mn_bound;
+    warning(['Bound for measurement noise is a scalar, converted to'...
+        ' a vector with identical entries.']);
+end
+if(length(input_bound)==1&&n_i>1)
+    input_bound=ones(n_i,1)*input_bound;
+    warning(['Input bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
+if(length(state_bound)==1&&n>1)
+    state_bound=ones(n,1)*state_bound;
+    warning(['State bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
+
+% Check the bounds.
+if(length(pn_bound)~=n||~isvector(pn_bound))
+    error('The number of bounds for process noise is not correct.');
+end
+if(length(mn_bound)~=n_y||~isvector(mn_bound))
+    error('The number of bounds for measurement noise is not correct.');
+end
+if(length(input_bound)~=n_i||~isvector(input_bound))
+    error('The number of bounds for inputs is not correct.');
+end
+if(length(state_bound)~=n||~isvector(state_bound))
+    error('The number of bounds for states is not correct.');
+end
+
 % Check the input.
+if(size(input,1)~=n_i)
+    error('The input dimension is not correct.');
+end
 for i=1:n_i
     if(input_bound(i)~=inf)
         if(norm(input(i,:),sys.input_norm(i))>input_bound(i))
