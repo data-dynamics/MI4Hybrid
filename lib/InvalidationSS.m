@@ -1,4 +1,5 @@
-function result=InvalidationSS(sys,input,output,pn_bound,mn_bound)
+function result=InvalidationSS(sys,input,output,pn_bound,mn_bound,...
+    state_bound)
 
 % This function applies the invalidation algorithm for state-space models
 % based on the system input and output. This invlidation algorithm is made
@@ -11,22 +12,41 @@ function result=InvalidationSS(sys,input,output,pn_bound,mn_bound)
 %   output -- the output sequence
 %   pn_bound -- bound for process noise
 %   mn_bound -- bound for measurement noise
+%   state_bound -- bound for states
 % Output:
 %   result -- return "true" if the system is validated, otherwise "false"
 %
 % Syntax:
 %   result=InvalidationSS(sys,input,output);
 %   result=InvalidationSS(sys,input,output,pn_bound,mn_bound);
+%   result=InvalidationSS(sys,input,output,pn_bound,mn_bound,state_bound);
 %
 % Author: MI4Hybrid
 % Date: July 8th, 2015
 
+% Obtain system model information.
+T=size(input,2); % time horizon
+n=size(sys.mode.C,2); % state dimension
+n_y=size(sys.mode.C,1); % output dimension
+
 % Use the default bounds if they are not specified.
-if(nargin==3&&~isnan(sys.pn_bound)&&~isnan(sys.mn_bound))
-    pn_bound=sys.pn_bound;
-    mn_bound=sys.mn_bound;
-elseif(nargin~=5)
-    error('Noise bounds are not specified.');
+if(nargin==3)
+    pn_bound=zeros(n,1);
+    mn_bound=zeros(n_y,1);
+    state_bound=zeros(n,1)+inf;
+elseif(nargin==5)
+    state_bound=zeros(n,1)+inf;
+end
+
+% Check the bounds.
+if(length(pn_bound)~=n||~isvector(pn_bound))
+    error('The number of bounds for process noise is not correct.');
+end
+if(length(mn_bound)~=n_y||~isvector(mn_bound))
+    error('The number of bounds for measurement noise is not correct.');
+end
+if(length(state_bound)~=n||~isvector(state_bound))
+    error('The number of bounds for states is not correct.');
 end
 
 % Check if the system model is valid for this function.
@@ -45,11 +65,6 @@ end
 if(size(output,1)~=size(sys.mode.C,1))
     error('The output is not consistent with the model.');
 end
-
-% Obtain system model information.
-T=size(input,2); % time horizon
-n=size(sys.mode.C,2); % state dimension
-n_y=size(sys.mode.C,1); % output dimension
 
 % Construct the matrix M using system parameters.
 % Construct the first part of M.
@@ -91,7 +106,7 @@ constraints=[M*x==b];
 for i=1:n
     if(sys.state_bound(i)~=inf)
         constraints=[constraints,...
-            norm(x(i:n:n*T),sys.state_norm(i))<=sys.state_bound(i)];
+            norm(x(i:n:n*T),sys.state_norm(i))<=state_bound(i)];
     end
 end
 for i=1:n
