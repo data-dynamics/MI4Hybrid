@@ -139,8 +139,8 @@ classdef StateSpace
             end
             if(length(input_norm)==1&&n_i>1)
                 input_norm=ones(n_i,1)*input_norm;
-                warning(['Input norm type is a scalar, converted to a'...
-                    ' vector with identical entries.']);
+                warning(['Norm type of input is a scalar, converted to'...
+                    ' a vector with identical entries.']);
             end
             if(length(state_norm)==1&&n>1)
                 state_norm=ones(n,1)*state_norm;
