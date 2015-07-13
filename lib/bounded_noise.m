@@ -1,7 +1,8 @@
 function noise=bounded_noise(a,k,T,flag)
 
 % This function creats vector valued (scalar valued if the dimension of the
-%   noise is 1) noise whose norm is bounded by k.
+% noise is 1) noise whose norm is bounded by k. Each dimension of the noise
+% is uniformly distributed.
 %
 % Inputs:
 %   a -- an n-by-1 vector corresponding to the norm types (for n dimension)
@@ -21,7 +22,8 @@ function noise=bounded_noise(a,k,T,flag)
 % Change a scalar bound to a vector having the same entries.
 if(length(k)==1&&length(a)~=1)
     k=zeros(length(a),1)+k;
-    warning('Input bound is a scalar, converted to a vector having the same entries.');
+    warning(['Input bound is a scalar, converted to a vector having the'...
+        ' same entries.']);
 end
 
 % Find the dimension of noise.
