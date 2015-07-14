@@ -104,7 +104,7 @@ b=[b;output(:,T)-sys.mode.D*input(:,T)-sys.f];
 x=sdpvar(T*(2*n+n_y),1);
 constraints=[M*x==b];
 for i=1:n
-    if(sys.state_bound(i)~=inf)
+    if(state_bound(i)~=inf)
         constraints=[constraints,...
             norm(x(i:n:n*T),sys.state_norm(i))<=state_bound(i)];
     end
