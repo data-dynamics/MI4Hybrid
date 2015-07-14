@@ -1,4 +1,4 @@
-classdef StateSpace
+onesclassdef StateSpace
     
     % The class represents a discrete-time (possibly switched) state-space
     % model. A general discrete-time state-space model with a switching
@@ -25,7 +25,8 @@ classdef StateSpace
     %   n_y -- number of outputs
     %   n_i -- number of inputs
     %   n_mode -- number of modes
-    properties(SetAccess=protected)
+    
+    properties(SetAccess = protected)
         % A set of discrete-time state-space modes.
         % e.g. mode(i).A, mode(i).B, mode(i).C, and mode(i).D represent the
         % i-th mode.
