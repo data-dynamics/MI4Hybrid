@@ -15,6 +15,31 @@ function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
 % Author: MI4Hybrid
 % Date: June 22nd, 2015
 
+% Obtain the system model information.
+T=size(input,2); % time horizon
+n_y=size(sys.mode.A,1); % output dimension
+degree=size(sys.mode.A,3); % degree of the system
+
+% Convert scalars to vectors.
+if(length(pn_bound)==1&&n_y>1)
+    pn_bound=ones(n_y,1)*pn_bound;
+    warning(['Bound for process noise is a scalar, converted to a '...
+        'vector with identical entries.']);
+end
+if(length(mn_bound)==1&&n_y>1)
+    mn_bound=ones(n_y,1)*mn_bound;
+    warning(['Bound for measurement noise is a scalar, converted to'...
+        ' a vector with identical entries.']);
+end
+
+% Check the bounds.
+if(length(pn_bound)~=n_y||~isvector(pn_bound))
+    error('The number of bounds for process noise is not correct.');
+end
+if(length(mn_bound)~=n_y||~isvector(mn_bound))
+    error('The number of bounds for measurement noise is not correct.');
+end
+
 % Check if the system model is valid for this function.
 if(strcmp(sys.mark,'arx')~=1)
     error('The system model must be a non-switched ARX model.');
@@ -31,11 +56,6 @@ end
 if(size(output,1)~=size(sys.mode.A,1))
     error('The output is not consistent with the model.');
 end
-
-% Obtain the system model information.
-T=size(input,2); % time horizon
-n_y=size(sys.mode.A,1); % output dimension
-degree=size(sys.mode.A,3); % degree of the system
 
 % Construct the matrix M using system parameters.
 M1=kron(eye(T-degree),sys.Ep);

@@ -17,7 +17,6 @@ function result=InvalidationSS(sys,input,output,pn_bound,mn_bound,...
 %   result -- return "true" if the system is validated, otherwise "false"
 %
 % Syntax:
-%   result=InvalidationSS(sys,input,output);
 %   result=InvalidationSS(sys,input,output,pn_bound,mn_bound);
 %   result=InvalidationSS(sys,input,output,pn_bound,mn_bound,state_bound);
 %
@@ -30,12 +29,25 @@ n=size(sys.mode.C,2); % state dimension
 n_y=size(sys.mode.C,1); % output dimension
 
 % Use the default bounds if they are not specified.
-if(nargin==3)
-    pn_bound=zeros(n,1);
-    mn_bound=zeros(n_y,1);
+if(nargin==5)
     state_bound=zeros(n,1)+inf;
-elseif(nargin==5)
-    state_bound=zeros(n,1)+inf;
+end
+
+% Convert scalars to vectors.
+if(length(pn_bound)==1&&n>1)
+    pn_bound=ones(n,1)*pn_bound;
+    warning(['Bound for process noise is a scalar, converted to a '...
+        'vector with identical entries.']);
+end
+if(length(mn_bound)==1&&n_y>1)
+    mn_bound=ones(n_y,1)*mn_bound;
+    warning(['Bound for measurement noise is a scalar, converted to'...
+        ' a vector with identical entries.']);
+end
+if(length(state_bound)==1&&n>1)
+    state_bound=ones(n,1)*state_bound;
+    warning(['State bound is a scalar, converted to a vector with '...
+        'identical entries.']);
 end
 
 % Check the bounds.
