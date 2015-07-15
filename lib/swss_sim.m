@@ -158,7 +158,7 @@ end
 T=size(input,2); % time horizon
 
 % Use a random switching sequence if it is an empty argument, otherwise use
-%   the user-specified switching sequence.
+% the user-specified switching sequence.
 if(isempty(switchseq))
     switchseq=randi(N,[T,1]);
 end
