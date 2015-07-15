@@ -33,6 +33,17 @@ if(nargin==5)
     state_bound=zeros(n,1)+inf;
 end
 
+% Set up default values for empty paramters.
+if(isempty(pn_bound))
+    pn_bound=zeros(n,1);
+end
+if(isempty(mn_bound))
+    mn_bound=zeros(n_y,1);
+end
+if(isempty(state_bound))
+    state_bound=zeros(n,1)+inf;
+end
+
 % Convert scalars to vectors.
 if(length(pn_bound)==1&&n>1)
     pn_bound=ones(n,1)*pn_bound;

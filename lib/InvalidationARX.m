@@ -20,6 +20,14 @@ T=size(input,2); % time horizon
 n_y=size(sys.mode.A,1); % output dimension
 degree=size(sys.mode.A,3); % degree of the system
 
+% Set up default values for empty paramters.
+if(isempty(pn_bound))
+    pn_bound=zeros(n_y,1);
+end
+if(isempty(mn_bound))
+    mn_bound=zeros(n_y,1);
+end
+
 % Convert scalars to vectors.
 if(length(pn_bound)==1&&n_y>1)
     pn_bound=ones(n_y,1)*pn_bound;
