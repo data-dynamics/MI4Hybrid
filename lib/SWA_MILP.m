@@ -40,12 +40,13 @@ function [Decision, sol] = SWA_MILP(SYS,y,u,p,u_bound,x_bound,mn_bound, solver)
 % Date: July 13th, 2015
 
 
-%% Time Horizon
+%% Input, States, Output dimensions and time horizon 
 [n_y N] = size(y);
 n_u = size(u);
 num_m = size(SYS.mode,2);   % number of modes
+n = size(SYS.mode(1).A)
 
-
+%% Initiate system modes
 for i = 1: num_m
     Mode(i).A = SYS.mode(i).A;
     Mode(i).B = SYS.mode(i).B;
@@ -54,14 +55,13 @@ for i = 1: num_m
     Mode(i).f = SYS.mode(i).f;
     Mode(i).g = SYS.mode(i).g;
 end
-n = size(Mode(1).A,1);
+
 M = x_bound;
 eps = mn_bound;
 U = u_bound;
 
 
 %% Checking input bounds
-
 for i = 1:n_u
     u_norm(1,i) = norm(u(i,:),p);
 end
@@ -83,9 +83,6 @@ s = binvar(N,num_m);
 e = sdpvar(num_m*N,n_y);
 X = sdpvar(num_m*N,2*n);
 
-
-
-%% Define Constraints
 Constraint = [];
 for t = 1:N-1    % time index
     
@@ -113,7 +110,8 @@ for t = 1:N-1    % time index
     Constraint = [Constraint sum(X((t-1)*num_m+1:t*num_m,n+1:2*n),1)...
         ==sum(X(t*num_m+1:(t+1)*num_m,1:n),1)];
 end
-% Last Constraint for the last output equation
+
+% Constraint for the last output equation
 for sys_ind = 1: num_m
     for j = 1:n_y   % constraints for output equation
         Constraint = [Constraint sys(sys_ind).g(j,:)*[X((N-1)*num_m+ ...
@@ -133,6 +131,8 @@ options = sdpsettings('verbose',1,'solver',solver);
 
 %% Solve the problem
 sol = optimize(Constraint,[],options);
+
+%% Print Results
 if strcmp(solver,'cplex')
     if strcmp (sol.info , 'Infeasible problem (CPLEX-IBM)')
         Decision = 'The model is invalidated';
