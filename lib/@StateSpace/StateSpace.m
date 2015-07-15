@@ -197,6 +197,14 @@ classdef StateSpace
                 error('The factor (matrix) for measurement noise is incorrect.');
             end
             
+            % Check the constant f and g.
+            if(size(f,1)~=n_y||size(f,2)~=n_mode)
+                error('The additive constant (notation f) is not valid.');
+            end
+            if(size(g,1)~=n||size(g,2)~=n_mode)
+                error('The additive constant (notation g) is not valid.');
+            end
+            
             % Assign values after checking.
             for i=1:n_mode
                 sys.mode(i).A=A(:,:,i);
