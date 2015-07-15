@@ -12,9 +12,9 @@ sys = StateSpace(A,B,C,D,[0 0;0 0],[0 0],inf,inf,zeros(2,2),1,inf,inf);
 T = 100;
 input = 10*randn(1,T);
 switchseq = randi(2,1,T);
-[y,p_noise,m_noise,switchseq]=simulates(sys,input,T,[],0,...
-    0.5,0,switchseq);
+[y,p_noise,m_noise,switchseq]=swss_sim(sys,input,[],[],...
+    0.3,[],[10 100],switchseq,0);
 
-Decision = SWA_MILP(sys,y,input,inf,1000,[10 100],0.3, 'gurobi')
+Decision = SWA_MILP(sys,y,input,inf,1000,[10 100],0.3, 'cplex')
 
 

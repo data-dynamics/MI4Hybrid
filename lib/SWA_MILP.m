@@ -51,8 +51,8 @@ for i = 1: num_m
     Mode(i).B = SYS.mode(i).B;
     Mode(i).C = SYS.mode(i).C;
     Mode(i).D = SYS.mode(i).D;
-    Mode(i).f = SYS.f(:,i);
-    Mode(i).g = SYS.g(:,i);
+    Mode(i).f = SYS.mode(i).f;
+    Mode(i).g = SYS.mode(i).g;
 end
 n = size(Mode(1).A,1);
 M = x_bound;
@@ -132,7 +132,6 @@ Constraint = [Constraint sum(s(N,:))==1];
 options = sdpsettings('verbose',1,'solver',solver);
 
 %% Solve the problem
-solver
 sol = optimize(Constraint,[],options);
 if strcmp(solver,'cplex')
     if strcmp (sol.info , 'Infeasible problem (CPLEX-IBM)')
