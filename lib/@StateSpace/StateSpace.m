@@ -1,4 +1,4 @@
-onesclassdef StateSpace
+classdef StateSpace
     
     % The class represents a discrete-time (possibly switched) state-space
     % model. A general discrete-time state-space model with a switching
@@ -114,6 +114,32 @@ onesclassdef StateSpace
                 state_norm=zeros(n,1)+inf;
             end
             if(nargin==11)
+                state_norm=zeros(n,1)+inf;
+            end
+            
+            % Set up default values for empty inputs.
+            if(isempty(g))
+                g=zeros(n,n_mode);
+            end
+            if(isempty(f))
+                f=zeros(n_y,n_mode);
+            end
+            if(isempty(pn_norm))
+                pn_norm=zeros(n,1)+inf;
+            end
+            if(isempty(mn_norm))
+                mn_norm=zeros(n_y,1)+inf;
+            end
+            if(isempty(Ep))
+                Ep=eye(n);
+            end
+            if(isempty(Em))
+                Em=eye(n_y);
+            end
+            if(isempty(input_norm))
+                input_norm=zeros(n_i,1)+inf;
+            end
+            if(isempty(state_norm))
                 state_norm=zeros(n,1)+inf;
             end
             
