@@ -16,7 +16,7 @@ classdef ARXmodel
     %   sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em);
     %   sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em,input_norm);
     %   
-    % Author: MI4Hybrid
+    % Author: Z. Luo, F. Harirchi and N. Ozay
     % Date: May 22nd, 2015
     
     % Notations:
