@@ -41,6 +41,7 @@ function [y,p_noise,m_noise,switchseq]=swarx_sim(sys,input,ini_reg,...
 % Date: July 15th, 2015
 
 % Obtain model/input information.
+num_arg=nargin;
 n=size(sys.mode(1).A,3); % order of the system
 n_y=size(sys.mode(1).A,1); % dimension of system output
 n_i=size(sys.mode(1).C,2); % input dimension
@@ -154,12 +155,13 @@ y=zeros(n_y,T); % pre-allocate memory
 y(:,1:n)=ini_reg;
 for i=n+1:T
     % Note: u(:,i) is not included when calculating y(:,i).
+    % Note: p_noise(:,1:n) is not included for calculation.
     y(:,i)=zeros(n_y,1);
     for j=1:n
         y(:,i)=y(:,i)+sys.mode(switchseq(i-n)).A(:,:,j)*y(:,i-j)+...
             sys.mode(switchseq(i-n)).C(:,:,j)*input(:,i-j);
     end
-    y(:,i)=y(:,i)+sys.mode(switchseq(i)).f+sys.Ep*p_noise(:,i);
+    y(:,i)=y(:,i)+sys.mode(switchseq(i-n)).f+sys.Ep*p_noise(:,i);
 end
 y=y+sys.Em*m_noise;
 
