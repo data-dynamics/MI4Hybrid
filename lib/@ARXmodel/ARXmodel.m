@@ -23,7 +23,8 @@ classdef ARXmodel
     %   n_y -- number of outputs
     %   n_mode -- number of modes
     %   n_i -- number of inputs
-    properties(SetAccess=protected)
+    
+    properties(SetAccess = protected)
         % A set of discrete-time ARX modes.
         % e.g. mode(i).A and mode(i).C represent the i-th mode.
         mode
@@ -97,6 +98,23 @@ classdef ARXmodel
                 input_norm=zeros(n_i,1)+inf;
             end
             if(nargin==7)
+                input_norm=zeros(n_i,1)+inf;
+            end
+            
+            % Set up default values for empty inputs.
+            if(isempty(pn_norm))
+                pn_norm=zeros(n_y,1)+inf;
+            end
+            if(isempty(mn_norm))
+                mn_norm=zeros(n_y,1)+inf;
+            end
+            if(isempty(Ep))
+                Ep=eye(n_y);
+            end
+            if(isempty(Em))
+                Em=eye(n_y);
+            end
+            if(isempty(input_norm))
                 input_norm=zeros(n_i,1)+inf;
             end
             
