@@ -15,6 +15,6 @@ switchseq = randi(2,1,T);
 [y,p_noise,m_noise,switchseq]=simulates(sys,input,T,[],0,...
     0.5,0,switchseq);
 
-Decision = SWA_MILP(sys,y,input,inf,1000,[10 100],0.3, 'cplex')
+Decision = SWA_MILP(sys,y,input,inf,1000,[10 100],0.3, 'gurobi')
 
 
