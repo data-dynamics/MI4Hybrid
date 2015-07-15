@@ -12,8 +12,29 @@ function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
 % Output:
 %   result -- return "true" if the system is validated, otherwise "false"
 %
-% Author: MI4Hybrid
+% Syntax:
+%   result=InvalidationARX(sys,input,output,pn_bound,mn_bound);
+%
+% Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: June 22nd, 2015
+
+% Check if the system model is valid for this function.
+if(strcmp(sys.mark,'arx')~=1)
+    error('The system model must be a non-switched ARX model.');
+end
+
+% Check if the input and output are consistent.
+if(length(input)~=length(output))
+    error('The input length and output length are not consistent.');
+end
+% Check if the input is consistent with the model.
+if(size(input,1)~=size(sys.mode.C,2))
+    error('The input is not consistent with the model.');
+end
+% Check if the output is consistent with the model.
+if(size(output,1)~=size(sys.mode.A,1))
+    error('The output is not consistent with the model.');
+end
 
 % Obtain the system model information.
 T=size(input,2); % time horizon
@@ -48,23 +69,6 @@ if(length(mn_bound)~=n_y||~isvector(mn_bound))
     error('The number of bounds for measurement noise is not correct.');
 end
 
-% Check if the system model is valid for this function.
-if(strcmp(sys.mark,'arx')~=1)
-    error('The system model must be a non-switched ARX model.');
-end
-% Check if the input and output are consistent.
-if(length(input)~=length(output))
-    error('The input length and output length are not consistent.');
-end
-% Check if the input is consistent with with the model.
-if(size(input,1)~=size(sys.mode.C,2))
-    error('The input is not consistent with the model.');
-end
-% Check if the output is consistent with the model.
-if(size(output,1)~=size(sys.mode.A,1))
-    error('The output is not consistent with the model.');
-end
-
 % Construct the matrix M using system parameters.
 M1=kron(eye(T-degree),sys.Ep);
 M2=zeros(n_y*(T-degree),n_y*T);
@@ -85,7 +89,7 @@ for i=1:degree
     b=b+sys.mode.A(:,:,i)*output(:,degree+1-i:T-i)+...
         sys.mode.C(:,:,i)*input(:,degree+1-i:T-i);
 end
-F=bsxfun(@plus,zeros(n_y,num_loop),sys.f);
+F=bsxfun(@plus,zeros(n_y,num_loop),sys.mode.f);
 b=b-output(:,degree+1:T)+F;
 b=reshape(b,[],1);
 
