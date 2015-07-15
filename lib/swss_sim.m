@@ -45,45 +45,122 @@ function [y,p_noise,m_noise,switchseq]=swss_sim(sys,input,ini_cond,...
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: July 15th, 2015
 
-% Set up default values if parameters are not specified.
+% Obtain model/input information.
 num_arg=nargin;
 n=size(sys.mode(1).A,1); % dimension of state
 n_y=size(sys.mode(1).C,1); % dimension of output
 n_i=size(sys.mode(1).B,2); % dimension of input
+N=size(sys.mode,2); % number of modes
+
+% Set up default values if parameters are not specified.
 if(num_arg==2)
-    ini_cond=[];
+    ini_cond=zeros(n,1);
     pn_bound=zeros(n,1);
     mn_bound=zeros(n_y,1);
     input_bound=zeros(n_i,1)+inf;
     state_bound=zeros(n,1)+inf;
+    switchseq=[];
     flag=0;
 elseif(num_arg==3)
     pn_bound=zeros(n,1);
     mn_bound=zeros(n_y,1);
     input_bound=zeros(n_i,1)+inf;
     state_bound=zeros(n,1)+inf;
+    switchseq=[];
     flag=0;
 elseif(num_arg==5)
     input_bound=zeros(n_i,1)+inf;
     state_bound=zeros(n,1)+inf;
+    switchseq=[];
     flag=0;
 elseif(num_arg==6)
     state_bound=zeros(n,1)+inf;
+    switchseq=[];
     flag=0;
 elseif(num_arg==7)
+    switchseq=[];
+    flag=0;
+elseif(num_arg==8)
     flag=0;
 end
 
-% Use a random switching sequence if it is an empty argument, otherwise use
-%   the user-specified switching sequence.
-if(isempty(switchseq))
-    N=size(sys.mode,2);   % number of modes
-    switchseq=randi(N,[T,1]);
+% Set up default values for empty arguments.
+if(isempty(pn_bound))
+    pn_bound=zeros(n,1);
+end
+if(isempty(mn_bound))
+    mn_bound=zeros(n_y,1);
+end
+if(isempty(input_bound))
+    input_bound=zeros(n_i,1)+inf;
+end
+if(isempty(state_bound))
+    state_bound=zeros(n,1)+inf;
+end
+if(isempty(flag))
+    flag=0;
 end
 
 % Make the initial condition be zero if it's not specified by users.
 if(isempty(ini_cond))
-    ini_cond=zeros(size(sys.mode(1).A,1),1);
+    ini_cond=zeros(n,1);
+end
+
+% Convert scalars to vectors.
+if(length(pn_bound)==1&&n>1)
+    pn_bound=ones(n,1)*pn_bound;
+    warning(['Bound for process noise is a scalar, converted to a '...
+        'vector with identical entries.']);
+end
+if(length(mn_bound)==1&&n_y>1)
+    mn_bound=ones(n_y,1)*mn_bound;
+    warning(['Bound for measurement noise is a scalar, converted to'...
+        ' a vector with identical entries.']);
+end
+if(length(input_bound)==1&&n_i>1)
+    input_bound=ones(n_i,1)*input_bound;
+    warning(['Input bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
+if(length(state_bound)==1&&n>1)
+    state_bound=ones(n,1)*state_bound;
+    warning(['State bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
+
+% Check the bounds.
+if(length(pn_bound)~=n||~isvector(pn_bound))
+    error('The number of bounds for process noise is not correct.');
+end
+if(length(mn_bound)~=n_y||~isvector(mn_bound))
+    error('The number of bounds for measurement noise is not correct.');
+end
+if(length(input_bound)~=n_i||~isvector(input_bound))
+    error('The number of bounds for inputs is not correct.');
+end
+if(length(state_bound)~=n||~isvector(state_bound))
+    error('The number of bounds for states is not correct.');
+end
+
+% Check the input.
+if(size(input,1)~=n_i)
+    error('The input dimension is not correct.');
+end
+for i=1:n_i
+    if(input_bound(i)~=inf)
+        if(norm(input(i,:),sys.input_norm(i))>input_bound(i))
+            warning(['At least one dimension of the input sequence '...
+                'exceeds its bound']);
+            break
+        end
+    end
+end
+T=size(input,2); % time horizon
+
+% Use a random switching sequence if it is an empty argument, otherwise use
+%   the user-specified switching sequence.
+if(isempty(switchseq))
+    switchseq=randi(N,[T,1]);
 end
 
 % Creat process noise.
@@ -97,13 +174,26 @@ k=mn_bound;
 m_noise=bounded_noise(a,k,T);
 
 % Calculate the output using the switching sequence.
-n=size(sys.mode(1).C,1); % dimension of system output
-y=zeros(n,T); % pre-allocate memory
-x=ini_cond;
+y=zeros(n_y,T); % pre-allocate memory
+x(:,1)=ini_cond;
 for i=1:T
-    x=sys.mode(switchseq(i)).A*x+sys.mode(switchseq(i)).B*input(:,i)+sys.g(:,switchseq(i))+sys.Ep*p_noise(:,i);
-    y(:,i)=sys.mode(switchseq(i)).C*x+sys.mode(switchseq(i)).D*input(:,i)+sys.f(:,switchseq(i));
+    y(:,i)=sys.mode(switchseq(i)).C*x(:,i)+...
+        sys.mode(switchseq(i)).D*input(:,i)+...
+        sys.f(:,switchseq(i));
+    x(:,i+1)=sys.mode(switchseq(i)).A*x(:,i)+sys.mode(switchseq(i)).B*input(:,i)+...
+        sys.g(:,switchseq(i))+sys.Ep*p_noise(:,i);
 end
 y=y+sys.Em*m_noise;
+
+% Check the state.
+for i=1:n
+    if(state_bound(i)~=inf)
+        if(norm(x(i,1:T),sys.state_norm(i))>state_bound(i))
+            warning(['At least one dimension of the state sequence '...
+                'exceeds its bound']);
+            break
+        end
+    end
+end
 
 end
