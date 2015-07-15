@@ -17,7 +17,7 @@ classdef StateSpace
     %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,input_norm,...
     %                  state_norm);
     %
-    % Author: MI4Hybrid
+    % Author: Z. Luo, F. Harirchi and N. Ozay
     % Date: May 22nd, 2015
 
     % Notations:
@@ -28,8 +28,8 @@ classdef StateSpace
     
     properties(SetAccess = protected)
         % A set of discrete-time state-space modes.
-        % e.g. mode(i).A, mode(i).B, mode(i).C, and mode(i).D represent the
-        % i-th mode.
+        % e.g. mode(i).A, mode(i).B, mode(i).C, mode(i).D, mode(i).g, and
+        % mode(i).f represent the i-th mode.
         mode
         % An n-by-1 column vector representing the norm types of process
         % noise.
@@ -45,10 +45,6 @@ classdef StateSpace
         state_norm
         % An n_i-by-n_i column vector representing the norm types of inputs.
         input_norm
-        % g is an n-by-n_mode matrix.
-        g
-        % f is an n_y-by-n_mode matrix.
-        f
         % A mark (a string) stating that the model is a regular or switched
         % state-space model.
         mark
@@ -207,13 +203,13 @@ classdef StateSpace
                 sys.mode(i).B=B(:,:,i);
                 sys.mode(i).C=C(:,:,i);
                 sys.mode(i).D=D(:,:,i);
+                sys.mode(i).g=g(:,i);
+                sys.mode(i).f=f(:,i);
             end
             sys.Ep=Ep;
             sys.Em=Em;
             sys.pn_norm=pn_norm;
             sys.mn_norm=mn_norm;
-            sys.g=g;
-            sys.f=f;
             sys.input_norm=input_norm;
             sys.state_norm=state_norm;
             
