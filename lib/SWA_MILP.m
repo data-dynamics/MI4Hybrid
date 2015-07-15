@@ -44,14 +44,16 @@ function Decision = SWA_MILP(SYS,y,u,p,u_bound,x_bound,mn_bound, solver)
 n_u = size(u);
 num_m = size(SYS.mode,2);   % number of modes
 
+
 for i = 1: num_m
     Mode(i).A = SYS.mode(i).A;
     Mode(i).B = SYS.mode(i).B;
     Mode(i).C = SYS.mode(i).C;
     Mode(i).D = SYS.mode(i).D;
-    Mode(i).f = SYS.mode(i).f;
-    Mode(i).g = SYS.mode(i).g;
+    Mode(i).f = SYS.f(:,i);
+    Mode(i).g = SYS.g(:,i);
 end
+n = size(Mode(1).A,1);
 M = x_bound;
 eps = mn_bound;
 U = u_bound;
@@ -64,7 +66,7 @@ for i = 1:n_u
 end
 if sum(u_norm > u_bound) >0
     Decision = 'Input bounds are not satisfied';
-    break
+    return
 end
 
 
@@ -129,23 +131,23 @@ Constraint = [Constraint sum(s(N,:))==1];
 options = sdpsettings('verbose',1,'solver',solver);
 
 %% Solve the problem
-
+solver
 sol = optimize(Constraint,[],options);
-if solver == 'cplex'
-    if sol.info == 'Infeasible problem (CPLEX-IBM)'
+if strcmp(solver,'cplex')
+    if strcmp (sol.info , 'Infeasible problem (CPLEX-IBM)')
         Decision = 'The model is invalidated';
     else
         Decision = 'The model is not invalidated';
     end
 end
 
-if solver == 'gurobi'
-    if sol.info == 'Infeasible problem'
-        Decision = 'The model is invalidated';
-    else
-        Decision = 'The model is not invalidated';
-    end
-end
+% if solver == 'gurobi'
+%     if sol.info == 'Infeasible problem'
+%         Decision = 'The model is invalidated';
+%     else
+%         Decision = 'The model is not invalidated';
+%     end
+% end
 
 
 

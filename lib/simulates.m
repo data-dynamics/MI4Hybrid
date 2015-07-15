@@ -120,8 +120,8 @@ n=size(sys.mode(1).C,1); % dimension of system output
 y=zeros(n,T); % pre-allocate memory
 x=ini_cond;
 for i=1:T
-    x=sys.mode(switchseq(i)).A*x+sys.mode(switchseq(i)).B*input(:,i)+sys.g(:,switchseq(i))+sys.Ep*p_noise(:,i);
     y(:,i)=sys.mode(switchseq(i)).C*x+sys.mode(switchseq(i)).D*input(:,i)+sys.f(:,switchseq(i));
+    x=sys.mode(switchseq(i)).A*x+sys.mode(switchseq(i)).B*input(:,i)+sys.g(:,switchseq(i))+sys.Ep*p_noise(:,i);
 end
 y=y+sys.Em*m_noise;
 

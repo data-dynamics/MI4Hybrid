@@ -1,4 +1,4 @@
-onesclassdef StateSpace
+classdef StateSpace
     
     % The class represents a discrete-time (possibly switched) state-space
     % model. A general discrete-time state-space model with a switching
