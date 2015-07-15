@@ -39,13 +39,15 @@ function [y,p_noise,m_noise]=ss_sim(sys,input,ini_cond,pn_bound,...
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: July 13th, 2015
 
-% Set up default values if parameters are not specified.
+% Obtain model/input information.
 num_arg=nargin;
 n=size(sys.mode.A,1); % dimension of state
 n_y=size(sys.mode.C,1); % dimension of output
 n_i=size(sys.mode.B,2); % dimension of input
+
+% Set up default values if parameters are not specified.
 if(num_arg==2)
-    ini_cond=[];
+    ini_cond=zeros(n,1);
     pn_bound=zeros(n,1);
     mn_bound=zeros(n_y,1);
     input_bound=zeros(n_i,1)+inf;
@@ -83,6 +85,11 @@ if(isempty(state_bound))
 end
 if(isempty(flag))
     flag=0;
+end
+
+% Make the initial condition be zero if it's not specified by users.
+if(isempty(ini_cond))
+    ini_cond=zeros(n,1);
 end
 
 % Convert scalars to vectors.
@@ -135,11 +142,6 @@ for i=1:n_i
     end
 end
 T=size(input,2); % time horizon
-
-% Make the initial condition be zero if it's not specified by users.
-if(isempty(ini_cond))
-    ini_cond=zeros(size(sys.mode(1).A,1),1);
-end
 
 % Creat process noise.
 a=sys.pn_norm;
