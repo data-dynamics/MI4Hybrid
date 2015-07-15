@@ -39,7 +39,7 @@ function [y,p_noise,m_noise]=ss_sim(sys,input,ini_cond,pn_bound,...
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: July 13th, 2015
 
-% Set up default values.
+% Set up default values if parameters are not specified.
 num_arg=nargin;
 n=size(sys.mode.A,1); % dimension of state
 n_y=size(sys.mode.C,1); % dimension of output
@@ -65,6 +65,23 @@ elseif(num_arg==6)
     state_bound=zeros(n,1)+inf;
     flag=0;
 elseif(num_arg==7)
+    flag=0;
+end
+
+% Set up default values for empty parameters.
+if(isempty(pn_bound))
+    pn_bound=zeros(n,1);
+end
+if(isempty(mn_bound))
+    mn_bound=zeros(n_y,1);
+end
+if(isempty(input_bound))
+    input_bound=zeros(n_i,1)+inf;
+end
+if(isempty(state_bound))
+    state_bound=zeros(n,1)+inf;
+end
+if(isempty(flag))
     flag=0;
 end
 
