@@ -26,7 +26,7 @@ classdef ARXmodel
     
     properties(SetAccess = protected)
         % A set of discrete-time ARX modes.
-        % e.g. mode(i).A and mode(i).C represent the i-th mode.
+        % e.g. mode(i).A, mode(i).C, and mode(i).f represent the i-th mode.
         mode
         % An n_y-by-1 column vector representing the norm types of process
         % noise.
@@ -34,8 +34,6 @@ classdef ARXmodel
         % An n_y-by-1 column vector representing the norm types of measurement
         % noise.
         mn_norm
-        % f is an n_y-by-n_mode matrix.
-        f
         % Ep is an n_y-by-n_y matrix for process noise.
         Ep
         % Em is an n_y-by-n_y matrix for measurement noise.
@@ -78,9 +76,9 @@ classdef ARXmodel
             
             % Set up default values if the parameters are not specified.
             if(nargin==2)
+                f=zeros(n_y,n_mode);
                 pn_norm=zeros(n_y,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
-                f=zeros(n_y,n_mode);
                 Ep=eye(n_y);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
@@ -102,6 +100,9 @@ classdef ARXmodel
             end
             
             % Set up default values for empty inputs.
+            if(isempty(f))
+                f=zeros(n_y,n_mode);
+            end
             if(isempty(pn_norm))
                 pn_norm=zeros(n_y,1)+inf;
             end
@@ -161,8 +162,13 @@ classdef ARXmodel
                       'valid.']);
             end
             if(size(Em,1)~=n_y||size(Em,2)~=n_y)
-                error(['The factor (matrix) for measurement noise is not'...
-                      ' valid.']);
+                error(['The factor (matrix) for measurement noise is '...
+                    'not valid.']);
+            end
+            
+            % Check the constant f.
+            if(size(f,1)~=n_y||size(f,2)~=n_mode)
+                error('The additive constant (notation f) is not valid.');
             end
             
             % Make the 3rd dimension of A and C to be the same by adding
@@ -190,12 +196,12 @@ classdef ARXmodel
             for i=1:n_mode
                 sys.mode(i).A=A(:,:,:,i);
                 sys.mode(i).C=C(:,:,:,i);
+                sys.mode(i).f=f(:,i);
             end
             sys.Ep=Ep;
             sys.Em=Em;
             sys.pn_norm=pn_norm;
             sys.mn_norm=mn_norm;
-            sys.f=f;
             sys.input_norm=input_norm;
             
         end
