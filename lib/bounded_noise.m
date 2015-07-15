@@ -16,7 +16,7 @@ function noise=bounded_noise(a,k,T,flag)
 %   noise=bounded_noise(a,k,T);
 %   noise=bounded_noise(a,k,T,flag);
 %
-% Author: MI4Hybrid
+% Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: May 22nd, 2015
 
 % Change a scalar bound to a vector having the same entries.
