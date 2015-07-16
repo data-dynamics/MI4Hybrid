@@ -42,7 +42,9 @@ function [y,p_noise,m_noise,switchseq]=swarx_sim(sys,input,ini_reg,...
 
 % Obtain model/input information.
 num_arg=nargin;
-n=size(sys.mode(1).A,3); % order of the system
+nA=size(sys.mode(1).A,3);
+nC=size(sys.mode(1).C,3);
+n=max(nA,nC); % degree of the system
 n_y=size(sys.mode(1).A,1); % dimension of system output
 n_i=size(sys.mode(1).C,2); % input dimension
 N=size(sys.mode,2);   % number of modes
