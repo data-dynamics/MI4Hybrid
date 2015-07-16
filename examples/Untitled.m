@@ -1,13 +1,11 @@
-% This is a file running for system invalidation. The system model is an ARX
-%   model with a single mode (i.e. only one submodel).
+%% Example of Non-Switched ARX Model Invalidation
 
 clear all
-addpath 'C:/Users/Administrator/Documents/MATLAB/Summer/MI4Hybrid2/lib'
+addpath '../lib'
 
-% Change this to change system parameters for the invalidation test.
-% This will not change the generated noisy data, but only influence the invalidation test.
-% e.g. 10% change of parameters means A_factor=0.9 and C_factor=0.9.
-% No need to care about f because f is a zero vector in this example.
+% Changing this will change system parameters for the invalidation test
+% only. e.g. Setting A_factor=0.9 and C_factor=0.9 means A*90% and C*90%
+% for all A matrices and C matrices.
 A_factor=1;
 C_factor=1;
 
@@ -18,51 +16,36 @@ C(:,:,1)=[1 0 0;0 0 0];
 C(:,:,2)=[1 0 0;0 0 0];
 f=[0;0];
 
-% Set up noise bound.
+% Set up noise parameters to generate noisy data.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[12 8];    % The process noise bound for data generation only
-mn_bound=[10 5];    % The measurement noise bound for data generation only
+pn_bound=[1.2 0.8];
+mn_bound=[0.3 0.3];
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
 
+% Creat input sequence.
+T=500;
 degree=size(sys.mode.A,3);
 n_in=size(sys.mode.C,2); % Input dimension.
-n_y=size(sys.mode.A,1); % Output dimension.
+input=[zeros(n_in,degree) randn(n_in,T-degree)];
 
-% Set up desired input data and time horizon T (T may be greater than the length of input).
-T=500;
-input=[zeros(n_in,degree) ones(n_in,T-degree)];
-
-% Set up initial conditions if needed.
-ini_cond=[];
-
-
-
-
-
-
-count=0;
-for ccc=1:20
+% Run the example for 20 times.
+for i=1:20
 
 % Run simulation to obtain I/O data.
-[y,~,~,~]=simulates(sys,input,T,ini_cond,pn_bound,mn_bound);
-    
-    
-result=InvalidationARX(sys,input,y,pn_bound,mn_bound);
+[y,~,~,~]=swarx_sim(sys,input,[],pn_bound,mn_bound);
 
+% Apply the invalidation function.
+% The noise bounds here are smaller the bounds used to generate data.
+result=InvalidationARX(sys,input,y,pn_bound,mn_bound*0.7);
+
+% Display invalidation result.
 if(result==1)
-    disp('Valid');
+    disp('Validated');
 elseif(result==0)
-    disp('Invalid');
-    count=count+1;
+    disp('Invalidated');
 end
 
-
-
-
-
-
 end
-count
