@@ -137,7 +137,7 @@ T=size(input,2); % time horizon
 % Use a random switching sequence if it is an empty input, otherwise use
 % the user-specified switching sequence.
 if(isempty(switchseq))
-    switchseq=randi(N,[T-n,1]);
+    switchseq=randi(N,[T-n,1]); % no need to have a length of n
 end
 
 % Creat process noise.
