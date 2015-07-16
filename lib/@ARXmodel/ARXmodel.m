@@ -27,6 +27,9 @@ classdef ARXmodel
     properties(SetAccess = protected)
         % A set of discrete-time ARX modes.
         % e.g. mode(i).A, mode(i).C, and mode(i).f represent the i-th mode.
+        % mode(i).A and mode(i).C will be 3-D arrays because each mode can
+        % have multiple A matrices and multiple C matrices.
+        % mode(i).f will be a column vector.
         mode
         % An n_y-by-1 column vector representing the norm types of process
         % noise.
@@ -47,9 +50,16 @@ classdef ARXmodel
     
     methods
         
-        % If there is only one mode, the model is not switchable.
+        % If there is only one submodel(mode), the model is not switchable.
         function sys=ARXmodel(A,C,f,pn_norm,mn_norm,Ep,Em,input_norm)
-            
+        
+        % The input A, C should be 4-D arrays where the 4th dimension is
+        % for different modes. Each mode can have multiple A matrices and
+        % multiple C matrices, so the first 3 dimensions are needed.
+        
+        % The input f should be a matrix where the i-th column corresponds
+        % to the i-th mode.
+        
             % Check A and C.
             if(size(A,4)~=size(C,4))
                 error(['The first two arguments must represent the '...
