@@ -19,8 +19,8 @@ f=[0;0];
 % Set up noise parameters to generate noisy data.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[1.2 0.8];
-mn_bound=[0.3 0.3];
+pn_bound=[1.2 0.8]*0;
+mn_bound=[0.5 0.5];
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
@@ -35,11 +35,11 @@ input=[zeros(n_in,degree) randn(n_in,T-degree)];
 for i=1:20
 
 % Run simulation to obtain I/O data.
-[y,~,~,~]=swarx_sim(sys,input,[],pn_bound,mn_bound);
+[output,~,~,~]=swarx_sim(sys,input,[],pn_bound,mn_bound);
 
 % Apply the invalidation function.
 % The noise bounds here are smaller the bounds used to generate data.
-result=InvalidationARX(sys,input,y,pn_bound,mn_bound*0.7);
+result=InvalidationARX(sys,input,output,pn_bound,mn_bound*0.99);
 
 % Display invalidation result.
 if(result==1)
