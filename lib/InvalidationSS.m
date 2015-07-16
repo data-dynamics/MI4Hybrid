@@ -117,11 +117,11 @@ M=[M1 M2 M3];
 b=output(:,2:end)-...
     sys.mode.C*sys.mode.B*input(:,1:T-1)-...
     sys.mode.D*input(:,2:end)-...
-    sys.mode.C*bsxfun(@plus,zeros(n,T-1),sys.g)-...
-    bsxfun(@plus,zeros(n_y,T-1),sys.f);
+    sys.mode.C*bsxfun(@plus,zeros(n,T-1),sys.mode.g)-...
+    bsxfun(@plus,zeros(n_y,T-1),sys.mode.f);
 b=reshape(b,[],1);
-b=[output(:,1)-sys.mode.D*input(:,1)-sys.f;b];
-b=[b;output(:,T)-sys.mode.D*input(:,T)-sys.f];
+b=[output(:,1)-sys.mode.D*input(:,1)-sys.mode.f;b];
+b=[b;output(:,T)-sys.mode.D*input(:,T)-sys.mode.f];
 
 % Set up variables and constraints.
 x=sdpvar(T*(2*n+n_y),1);
@@ -141,7 +141,7 @@ end
 for i=1:n_y
     if(mn_bound(i)~=inf)
         constraints=[constraints,...
-            norm(x(2*n*T+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
+            norm(x(2*n*T+i:n_y:T*(2*n+n_y)),sys.mn_norm(i))<=mn_bound(i)];
     end
 end
 
