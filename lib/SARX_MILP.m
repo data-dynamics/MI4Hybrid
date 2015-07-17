@@ -1,4 +1,4 @@
-function [Decision, sol] = SARX_MILP(SYS,y,u,p,u_bnd,mn_bnd,solver)
+function [Decision, sol,Constraint,e,s] = SARX_MILP(SYS,y,u,p,u_bnd,mn_bnd,solver)
 
 % This function implements MILP-based model invalidation approach for 
 % switched state-space models discussed in "Model Invalidation for Switched 
@@ -40,7 +40,8 @@ function [Decision, sol] = SARX_MILP(SYS,y,u,p,u_bnd,mn_bnd,solver)
 
 %% Input, States, Output dimensions and time horizon 
 [n_y N] = size(y);          % number of outputs and time horizon
-n_u = size(u);              % number of inputs
+n_u = size(u);    % number of inputs
+% num_m = 1;
 num_m = size(SYS.mode,2);   % number of modes
 
 %% Initiate system modes
@@ -50,66 +51,86 @@ for i = 1: num_m
     Mode(i).f = SYS.mode(i).f;
 end
 
-M = x_bnd;
 eps = mn_bnd;
 U = u_bnd;
-
 
 %% Checking input bounds
 for i = 1:n_u
     u_norm(1,i) = norm(u(i,:),p);
 end
-if sum(u_norm > u_bnd) >0
+if sum(u_norm > U) >0
     Decision = 'Input bounds are not satisfied';
     return
 end
 
-
 %% Building the constraints
-for i = 1:num_m
-    sys(i).h = [-eye(n_y) Mode(i).A];
-    sys(i).g = [Mode(i).C];
-    sys(i).f = [Mode(i).f];
-end
-n_a = size(Mode(1).A,2);
-n_c = size(Mode(1).C,2);
+
+% Building vectors for output equations
+n_a = size(Mode(1).A,3);
+n_c = size(Mode(1).C,3);
 n = max(n_a,n_c);
+for i = 1:num_m
+    MODE(i).A(:,:,1) = -eye(n_y);
+    for k = 1:n_a
+        MODE(i).A(:,:,k+1) = Mode(i).A(:,:,k);
+    end
+end
+
+for i = 1:num_m
+    sys(i).h = [];
+    for j = 1: n_y
+        for k = 1:n_a+1
+            sys(i).h = [sys(i).h MODE(i).A(:,j,k)];
+        end
+    end
+    sys(i).g = [];
+    for j = 1:n_u
+        for k = 1:n_c
+            sys(i).g = [sys(i).g Mode(i).C(:,j,k)];
+        end
+    end
+    sys(i).f = Mode(i).f;
+end
+
 
 % Define variables
 s = binvar(N,num_m);
-e = sdpvar(num_m*N,n_y);
+e = sdpvar(n_y*(n_a+1),num_m*N);
 
 
 Constraint = [];
-for t = n+1:N   % time index
+for t = n+1:N-1   % time index
     
     for sys_ind = 1: num_m  % mode index
         
         for j = 1:n_y   % constraints for output equation
-            Constraint = [Constraint -sys(sys_ind).h(j,:)* e(j,t-n_a:t)+...
-                s(t,sys_ind)*(sys(sys_ind).g(j,:)*u(:,t-n_c:t-1)+... 
-                sys(sys_ind).h*y(j,t-n_a:t)) + Mode(i).f(j) ==0];
+           Constraint = [Constraint -sys(sys_ind).h(j,:)*e(:,(t-1)*num_m...
+           +sys_ind)+s(t,sys_ind)*(sys(sys_ind).g(j,:)*reshape(u(:,...
+           t-1:-1:t-n_c)',1,[])'+sys(sys_ind).h(j,:)*reshape(y(:,...
+           t:-1:t-n_a)',1,[])')+ sys(sys_ind).f(j) ==0];
         end
         
-        % constraints for noise variables
-        Constraint = [Constraint sum(e((t-1)*num_m+1:t*num_m,2:n_a),1) == ...
-            sum(e((t-2)*num_m+1:(t-1)*num_m,1:n_a-1),1)];
-
-        
-        
-        Constraint = [Constraint norm(e((t-1)*num_m+sys_ind,:),inf)<=...
-            eps*s(t,sys_ind)];
+        for i=1:n_y
+            %constraints for noise variables
+            Constraint = [Constraint norm(e((i-1)*(n_a+1)+1:i*(n_a+1),(t-1)*num_m+sys_ind),inf)<=...
+             eps(n_y)*s(t,sys_ind)];
+%             Constraint = [Constraint norm(e(:,(t-1)*num_m+sys_ind),inf)<=...
+%              eps(1)*s(t,sys_ind)];
+        end
+                
     end
     Constraint = [Constraint sum(s(t,:))==1];
-    
+                
     % constraints for noise variables
-    Constraint = [Constraint sum(e((t-1)*num_m+1:t*num_m,2:n_a),1) == ...
-            sum(e((t-2)*num_m+1:(t-1)*num_m,1:n_a-1),1)];
+    for i=1:n_y
+            Constraint = [Constraint sum(e((i-1)*(n_a+1)+2:(i)*(n_a+1),(t-1)*num_m+1:...
+            t*num_m),2)==sum(e((i-1)*(n_a+1)+1:i*(n_a+1)-1,(t-2)*num_m+1:(t-1)*num_m),2)];   
+    end
 end
-
-
+                
+                
 %% Setting up Options
-options = sdpsettings('verbose',1,'solver',solver);
+options = sdpsettings('verbose',0,'solver',solver);
 
 %% Solve the problem
 sol = optimize(Constraint,[],options);
