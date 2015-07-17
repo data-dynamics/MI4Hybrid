@@ -4,10 +4,11 @@ clear all
 addpath '../lib'
 
 % Changing this will change system parameters for the invalidation test
-% only. e.g. Setting A_factor=0.9 and C_factor=0.9 means A*90% and C*90%
-% for all A matrices and C matrices.
+% only. e.g. Setting A_factor=0.9, C_factor=0.9, and f_factor=0.9 means
+% A*90%, C*90%, and f*90% for all A matrices, C matrices, and vectors f.
 A_factor=1;
 C_factor=1;
+f_factor=1;
 
 % Define system parameter.
 A(:,:,1)=[0.4747 0.0628;-0.3424 1.2250];
@@ -19,13 +20,14 @@ f=[0;0];
 % Set up noise parameters to generate noisy data.
 pn_norm=[inf inf];
 mn_norm=[inf inf];
-pn_bound=[1.2 0.8]*0;
+pn_bound=[0.15 0.15]*0;
 mn_bound=[0.5 0.5];
 
 % Creat the system model.
 sys=ARXmodel(A,C,f,pn_norm,mn_norm);
+sys2=ARXmodel(A*A_factor,C*C_factor,f*f_factor,pn_norm,mn_norm);
 
-% Creat input sequence.
+% Creat random input sequence using normal distribution.
 T=500;
 degree=size(sys.mode.A,3);
 n_in=size(sys.mode.C,2); % Input dimension.
@@ -39,7 +41,7 @@ for i=1:20
 
 % Apply the invalidation function.
 % The noise bounds here are smaller the bounds used to generate data.
-result=InvalidationARX(sys,input,output,pn_bound,mn_bound*0.99);
+result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.99);
 
 % Display invalidation result.
 if(result==1)
