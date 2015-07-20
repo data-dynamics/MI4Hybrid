@@ -88,6 +88,11 @@ if(length(mn_bound)==1&&n_y>1)
     warning(['Bound for measurement noise is a scalar, converted to'...
         ' a vector with identical entries.']);
 end
+if(length(input_bound)==1&&n_i>1)
+    input_bound=ones(n_i,1)*input_bound;
+    warning(['Input bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
 if(length(state_bound)==1&&n>1)
     state_bound=ones(n,1)*state_bound;
     warning(['State bound is a scalar, converted to a vector with '...
@@ -97,6 +102,9 @@ end
 %% Check the bounds.
 if(length(mn_bound)~=n_y||~isvector(mn_bound))
     error('The number of bounds for measurement noise is not correct.');
+end
+if(length(input_bound)~=n_i||~isvector(input_bound))
+    error('The number of bounds for inputs is not correct.');
 end
 if(length(state_bound)~=n||~isvector(state_bound))
     error('The number of bounds for states is not correct.');
