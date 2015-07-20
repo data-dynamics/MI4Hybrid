@@ -37,7 +37,7 @@ T=size(input,2); % time horizon
 n_y=size(sys.mode.A,1); % output dimension
 degree=size(sys.mode.A,3); % degree of the system
 
-% Use the default bounds if they are not specified.
+% Use the default solver if they are not specified.
 if(nargin==5)
     solver='cplex';
 end
