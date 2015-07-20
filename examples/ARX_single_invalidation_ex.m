@@ -28,7 +28,7 @@ sys=ARXmodel(A,C,f,pn_norm,mn_norm);
 sys2=ARXmodel(A*A_factor,C*C_factor,f*f_factor,pn_norm,mn_norm);
 
 % Creat random input sequence using normal distribution.
-T=500;
+T=100;
 degree=size(sys.mode.A,3);
 n_in=size(sys.mode.C,2); % Input dimension.
 input=[zeros(n_in,degree) randn(n_in,T-degree)];
@@ -41,7 +41,7 @@ for i=1:20
 
 % Apply the invalidation function.
 % The noise bounds here are smaller the bounds used to generate data.
-result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.99);
+result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.95,'mosek');
 
 % Display invalidation result.
 if(result==1)
