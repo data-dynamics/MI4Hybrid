@@ -1,4 +1,4 @@
-function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
+function result=InvalidationARX(sys,input,output,pn_bound,mn_bound,solver)
 
 % This function applies the invalidation algorithm for ARX models based on
 % the system input and output. This invlidation algorithm is made to check
@@ -9,11 +9,20 @@ function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
 %   sys -- the system model
 %   input -- the input sequence
 %   output -- the output sequence
+%   pn_bound -- the bound for process noise
+%   mn_bound -- the bound for measurement noise
+%   solver -- solver to be used to solve the optimization problem
+%           -- 'cplex': uses CPLEX solver from IBM (needs to be installed)
+%               for more information on cplex see: "http://www-03.ibm.com
+%               /software/products/en/ibmilogcpleoptistud"
+%           -- 'mosek': use Mosek as the solver (needs to be installed)
+%               for more information on Mosek see: "https://www.mosek.com/"
 % Output:
 %   result -- return "true" if the system is validated, otherwise "false"
 %
 % Syntax:
 %   result=InvalidationARX(sys,input,output,pn_bound,mn_bound);
+%   result=InvalidationARX(sys,input,output,pn_bound,mn_bound,solver);
 %
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: June 22nd, 2015
@@ -21,6 +30,27 @@ function result=InvalidationARX(sys,input,output,pn_bound,mn_bound)
 % Check if the system model is valid for this function.
 if(strcmp(sys.mark,'arx')~=1)
     error('The system model must be a non-switched ARX model.');
+end
+
+% Obtain the system model information.
+T=size(input,2); % time horizon
+n_y=size(sys.mode.A,1); % output dimension
+degree=size(sys.mode.A,3); % degree of the system
+
+% Use the default bounds if they are not specified.
+if(nargin==5)
+    solver='cplex';
+end
+
+% Set up default values for empty paramters.
+if(isempty(pn_bound))
+    pn_bound=zeros(n_y,1);
+end
+if(isempty(mn_bound))
+    mn_bound=zeros(n_y,1);
+end
+if(isempty(solver))
+    solver='cplex';
 end
 
 % Check if the input and output are consistent.
@@ -34,19 +64,6 @@ end
 % Check if the output is consistent with the model.
 if(size(output,1)~=size(sys.mode.A,1))
     error('The output is not consistent with the model.');
-end
-
-% Obtain the system model information.
-T=size(input,2); % time horizon
-n_y=size(sys.mode.A,1); % output dimension
-degree=size(sys.mode.A,3); % degree of the system
-
-% Set up default values for empty paramters.
-if(isempty(pn_bound))
-    pn_bound=zeros(n_y,1);
-end
-if(isempty(mn_bound))
-    mn_bound=zeros(n_y,1);
 end
 
 % Convert scalars to vectors.
@@ -108,7 +125,7 @@ for i=1:n_y
             norm(n(n_y*(T-degree)+i:n_y:end),sys.mn_norm(i))<=mn_bound(i)];
     end
 end
-options=sdpsettings('verbose',0,'solver','mosek');
+options=sdpsettings('verbose',0,'solver',solver);
 solution=optimize(constraints,[],options);
 if(solution.problem==0)
     result=true;
