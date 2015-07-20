@@ -1,4 +1,4 @@
-function [Decision, sol] = SWA_MILP(SYS,input,output,mn_bound,...
+function [Decision,sol] = SWA_MILP(SYS,input,output,mn_bound,...
     input_bound,state_bound,solver)
 
 % This function implements MILP-based model invalidation approach for the
@@ -14,8 +14,8 @@ function [Decision, sol] = SWA_MILP(SYS,input,output,mn_bound,...
 %            of input and T is time horizon
 %   output -- output sequence (an n_y-by-T matrix) where n_y is the
 %             dimension of output and T is time horizon
-%   mn_bound -- an n_y-by-1 vector specifying the bound for process noise
-%               where n_y is the dimension of output
+%   mn_bound -- an n_y-by-1 vector specifying the bound for measurement
+%               noise where n_y is the dimension of output
 %   input_bound -- an n_i-by-1 vector specifying p-norm bound on input
 %                  values where n_i is number of inputs
 %   state_bound -- an n-by-1 vector specifying infinity norm bound on state 
@@ -41,14 +41,14 @@ function [Decision, sol] = SWA_MILP(SYS,input,output,mn_bound,...
 % Author: MI4Hybrid
 % Date: July 13th, 2015
 
-%% Check if the system model is valid for this function.
+%% Check if the system model is valid for this function
 if(strcmp(SYS.mark,'ss')~=1&&strcmp(SYS.mark,'swss')~=1)
-    error('The system model must be an ARX model.');
+    error('The system model must be a state-space model.');
 end
 
-%% Check if the input, output, and the model are consistent.
+%% Check if the input, output, and the model are consistent
 if(length(input)~=length(output))
-    error('The input length and output length are not consistent.');
+    error('The input length and output length are not the same.');
 end
 if(size(input,1)~=size(SYS.mode(1).B,2))
     error('The input is not consistent with the model.');
@@ -63,12 +63,12 @@ n_i = size(input); % input dimension
 n_mode = size(SYS.mode,2); % number of modes
 n = size(SYS.mode(1).A,1); % state dimension
 
-%% Use the default solver if it is not specified.
+%% Use the default solver if it is not specified
 if(nargin==6)
     solver='cplex';
 end
 
-%% Set up default values for empty paramters.
+%% Set up default values for empty paramters
 if(isempty(mn_bound))
     mn_bound=zeros(n_y,1);
 end
@@ -82,7 +82,7 @@ if(isempty(solver))
     solver='cplex';
 end
 
-%% Convert scalars to vectors.
+%% Convert scalars to vectors
 if(length(mn_bound)==1&&n_y>1)
     mn_bound=ones(n_y,1)*mn_bound;
     warning(['Bound for measurement noise is a scalar, converted to'...
@@ -99,7 +99,7 @@ if(length(state_bound)==1&&n>1)
         'identical entries.']);
 end
 
-%% Check the bounds.
+%% Check the bounds
 if(length(mn_bound)~=n_y||~isvector(mn_bound))
     error('The number of bounds for measurement noise is not correct.');
 end
