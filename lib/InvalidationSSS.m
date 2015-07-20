@@ -118,15 +118,15 @@ b=[b1;b2];
 x=sdpvar(T*(2*n+n_y)-n,1);
 constraints=[M*x==b];
 
-constraints=[constraints,abs(x(1))<=state_bound(1),abs(x(2))<=state_bound(2)];
-%{
+% constraints=[constraints,abs(x(1))<=state_bound(1),abs(x(2))<=state_bound(2)];
+
 for i=1:n
     if(state_bound(i)~=inf)
         constraints=[constraints,...
             norm(x(i:n:n*T),sys.state_norm(i))<=state_bound(i)];
     end
 end
-%}
+
 for i=1:n_y
     if(mn_bound(i)~=inf)
         constraints=[constraints,...
@@ -140,8 +140,8 @@ for i=1:n
     end
 end
 
-% Check the fesibility.
-options=sdpsettings('verbose',0,'solver','mosek');
+% Check the feasibility.
+options=sdpsettings('verbose',0,'solver','cplex');
 solution=optimize(constraints,[],options);
 if(solution.problem==0)
     result=true;
