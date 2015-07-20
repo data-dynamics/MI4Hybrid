@@ -24,11 +24,11 @@ input = 10*randn(1,T);
 switchseq = randi(1,1,T);
 
 % Generate data using the system sys, input and switchseq
-[y,p_noise,m_noise,switchseq]=swss_sim(sys,input,[],pn_bound_test,mn_bound,[],state_bound,...
+[output,p_noise,m_noise,switchseq]=swss_sim(sys,input,[],pn_bound_test,mn_bound,[],state_bound,...
     switchseq,0);
 
-result=InvalidationSSS(sys,input,y,pn_bound_test,mn_bound_test,state_bound)
+result=InvalidationSS(sys,input,output,pn_bound_test,mn_bound_test,state_bound)
 
 % Model invalidation
-Decision = SWA_MILP(sys,y,input,inf,1000,state_bound,mn_bound_test, 'cplex')
+Decision = SWA_MILP(sys,input,output,mn_bound_test,1000,state_bound, 'cplex')
 end
