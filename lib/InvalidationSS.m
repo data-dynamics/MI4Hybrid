@@ -1,5 +1,5 @@
 function result=InvalidationSS(sys,input,output,pn_bound,mn_bound,...
-    state_bound)
+    state_bound,solver)
 
 % This function applies the invalidation algorithm for state-space models
 % based on the system input and output. This invlidation algorithm is made
@@ -13,15 +13,27 @@ function result=InvalidationSS(sys,input,output,pn_bound,mn_bound,...
 %   pn_bound -- bound for process noise
 %   mn_bound -- bound for measurement noise
 %   state_bound -- bound for states
+%   solver -- solver to be used to solve the optimization problem
+%           -- 'cplex': uses CPLEX solver from IBM (needs to be installed)
+%               for more information on cplex see: "http://www-03.ibm.com
+%               /software/products/en/ibmilogcpleoptistud"
+%           -- 'mosek': use Mosek as the solver (needs to be installed)
+%               for more information on Mosek see: "https://www.mosek.com/"
 % Output:
 %   result -- return "true" if the system is validated, otherwise "false"
 %
 % Syntax:
-%   result=InvalidationSS(sys,input,output,pn_bound,mn_bound);
 %   result=InvalidationSS(sys,input,output,pn_bound,mn_bound,state_bound);
+%   result=InvalidationSS(sys,input,output,pn_bound,mn_bound,...
+%                           state_bound,solver);
 %
-% Author: MI4Hybrid
+% Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: July 8th, 2015
+
+% Check if the system model is valid for this function.
+if(strcmp(sys.mark,'ss')~=1)
+    error('The system model must be a non-switched state-space model.');
+end
 
 % Obtain system model information.
 T=size(input,2); % time horizon
@@ -29,8 +41,8 @@ n=size(sys.mode.C,2); % state dimension
 n_y=size(sys.mode.C,1); % output dimension
 
 % Use the default bounds if they are not specified.
-if(nargin==5)
-    state_bound=zeros(n,1)+inf;
+if(nargin==6)
+    solver='cplex';
 end
 
 % Set up default values for empty paramters.
@@ -42,6 +54,9 @@ if(isempty(mn_bound))
 end
 if(isempty(state_bound))
     state_bound=zeros(n,1)+inf;
+end
+if(isempty(solver))
+    solver='cplex';
 end
 
 % Convert scalars to vectors.
@@ -72,10 +87,6 @@ if(length(state_bound)~=n||~isvector(state_bound))
     error('The number of bounds for states is not correct.');
 end
 
-% Check if the system model is valid for this function.
-if(strcmp(sys.mark,'ss')~=1)
-    error('The system model must be a non-switched state-space model.');
-end
 % Check if the input and output are consistent.
 if(length(input)~=length(output))
     error('The input length and output length are not consistent.');
@@ -91,40 +102,30 @@ end
 
 % Construct the matrix M using system parameters.
 % Construct the first part of M.
-buffer=sys.mode.C*sys.mode.A;
-M1=kron(eye(T-1),buffer);
-buffer=zeros((T-1)*n_y,n);
-M1=[M1 buffer];
-buffer=zeros(n_y,T*n);
-buffer(:,1:n)=sys.mode.C;
-M1=[buffer;M1];
-buffer=zeros(n_y,T*n);
-buffer(:,n*(T-1)+1:n*T)=sys.mode.C;
-M1=[M1;buffer];
+M1=[kron(eye(T),sys.mode.C) kron(eye(T),sys.Em) zeros(T*n_y,(T-1)*n)];
 % Construct the second part of M.
-M2=zeros(n_y*(T+1),n*T);
-buffer=sys.mode.C*sys.Ep;
-M2(n_y+1:n_y*T,1:n*(T-1))=kron(eye(T-1),buffer);
-% Construct the third part of M.
-M3=kron(eye(T),sys.Em);
-buffer=zeros(n_y,n_y*T);
-buffer(:,n_y*(T-1)+1:n_y*T)=sys.Em;
-M3=[M3;buffer];
-% Combine M1, M2, M3 to obtain M.
-M=[M1 M2 M3];
+M2_1=zeros((T-1)*n,T*n);
+for i=1:T-1
+    M2_1(n*(i-1)+1:n*i,n*(i-1)+1:n*(i+1))=[-sys.mode.A eye(n)];
+end
+M2_2=[zeros((T-1)*n,T*n_y) kron(eye(T-1),-sys.Ep)];
+M2=[M2_1 M2_2];
+% Combine M1 and M2 to obtain M.
+M=[M1;M2];
 
 % Construct the vector b using I/O data as well as the system parameters.
-b=output(:,2:end)-...
-    sys.mode.C*sys.mode.B*input(:,1:T-1)-...
-    sys.mode.D*input(:,2:end)-...
-    sys.mode.C*bsxfun(@plus,zeros(n,T-1),sys.mode.g)-...
-    bsxfun(@plus,zeros(n_y,T-1),sys.mode.f);
-b=reshape(b,[],1);
-b=[output(:,1)-sys.mode.D*input(:,1)-sys.mode.f;b];
-b=[b;output(:,T)-sys.mode.D*input(:,T)-sys.mode.f];
+% Construct the first part of b.
+b1=output(:,1:T)-sys.mode.D*input(:,1:T)-...
+    bsxfun(@plus,zeros(n_y,T),sys.mode.f);
+b1=reshape(b1,[],1);
+% Construct the second part of b.
+b2=sys.mode.B*input(:,1:T-1)+bsxfun(@plus,zeros(n,T-1),sys.mode.g);
+b2=reshape(b2,[],1);
+% Combine b1 and b2 to obtain b.
+b=[b1;b2];
 
 % Set up variables and constraints.
-x=sdpvar(T*(2*n+n_y),1);
+x=sdpvar(T*(2*n+n_y)-n,1);
 constraints=[M*x==b];
 for i=1:n
     if(state_bound(i)~=inf)
@@ -132,21 +133,21 @@ for i=1:n
             norm(x(i:n:n*T),sys.state_norm(i))<=state_bound(i)];
     end
 end
-for i=1:n
-    if(pn_bound(i)~=inf)
-        constraints=[constraints,...
-            norm(x(n*T+i:n:n*2*T),sys.pn_norm(i))<=pn_bound(i)];
-    end
-end
 for i=1:n_y
     if(mn_bound(i)~=inf)
         constraints=[constraints,...
-            norm(x(2*n*T+i:n_y:T*(2*n+n_y)),sys.mn_norm(i))<=mn_bound(i)];
+            norm(x(n*T+i:n_y:n*T+n_y*T),sys.mn_norm(i))<=mn_bound(i)];
+    end
+end
+for i=1:n
+    if(pn_bound(i)~=inf)
+        constraints=[constraints,...
+            norm(x((n+n_y)*T+i:n:end),sys.pn_norm(i))<=pn_bound(i)];
     end
 end
 
-% Check the fesibility.
-options=sdpsettings('verbose',0,'solver','mosek');
+% Check the feasibility.
+options=sdpsettings('verbose',0,'solver',solver);
 solution=optimize(constraints,[],options);
 if(solution.problem==0)
     result=true;
