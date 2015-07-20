@@ -44,7 +44,7 @@ function [Decision, sol] = SWA_MILP(SYS,y,u,p,u_bound,x_bound,mn_bound, solver)
 [n_y N] = size(y);
 n_u = size(u);
 num_m = size(SYS.mode,2);   % number of modes
-n = size(SYS.mode(1).A)
+n = size(SYS.mode(1).A,1);
 
 %% Initiate system modes
 for i = 1: num_m
@@ -127,7 +127,7 @@ Constraint = [Constraint sum(s(N,:))==1];
 
 
 %% Setting up Options
-options = sdpsettings('verbose',1,'solver',solver);
+options = sdpsettings('verbose',0,'solver',solver);
 
 %% Solve the problem
 sol = optimize(Constraint,[],options);

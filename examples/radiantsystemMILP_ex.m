@@ -37,8 +37,9 @@ sys = StateSpace(A,B,C,D,[],F);
 sys_f = StateSpace(A_f,B_f,C_f,D_f,[],F_f);
 
 % Time Horizon
-T = 200;
-
+for T = 100:100:1000
+for i = 1:50
+    t1 = tic;
 % Generate input & switching sequence
 input = 10*randn(1,T);
 switchseq = randi(num_m,1,T);
@@ -49,6 +50,14 @@ eps = 0.3;
     switchseq,0);
 
 % Model invalidation
-Decision = SWA_MILP(sys,y,input,inf,1000,[10 100],0.3, 'cplex')
+Decision = SWA_MILP(sys,y,input,inf,1000,[100 100 100],eps, 'cplex');
+t(i,T/100) = toc(t1)
+end
+end
+
+for i = 1:10
+    t_mean = mean(t(:,i));
+    t_std = std(t(:,i));
+end
 
 
