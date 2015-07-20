@@ -40,7 +40,7 @@ T=size(input,2); % time horizon
 n=size(sys.mode.C,2); % state dimension
 n_y=size(sys.mode.C,1); % output dimension
 
-% Use the default solver if they are not specified.
+% Use the default solver if it is not specified.
 if(nargin==6)
     solver='cplex';
 end
