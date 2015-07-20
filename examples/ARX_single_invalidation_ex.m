@@ -36,18 +36,18 @@ input=[zeros(n_in,degree) randn(n_in,T-degree)];
 % Run the example for 20 times.
 for i=1:20
 
-% Run simulation to obtain I/O data.
-[output,~,~,~]=swarx_sim(sys,input,[],pn_bound,mn_bound);
+    % Run simulation to obtain I/O data.
+    [output,~,~,~]=swarx_sim(sys,input,[],pn_bound,mn_bound);
 
-% Apply the invalidation function.
-% The noise bounds here are smaller the bounds used to generate data.
-result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.95,'mosek');
+    % Apply the invalidation function.
+    % The noise bound here is smaller than the bound used to generate data.
+    result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.95,'mosek');
 
-% Display invalidation result.
-if(result==1)
-    disp('Validated');
-elseif(result==0)
-    disp('Invalidated');
-end
+    % Display invalidation result.
+    if(result==1)
+        disp('Validated');
+    elseif(result==0)
+        disp('Invalidated');
+    end
 
 end
