@@ -1,27 +1,37 @@
-#### MI4Hybrid2 (An Informal Version)
+#### MI4Hybrid
 
-#####In the folder "System_Classes":
+#####In the folder "lib":
 
-1. StateSpace.m is a class for state space models with noise specification.
-   * UnStateSpace.m is a class for state space models with noise specification and parameter uncertainty.
+1. StateSpace.m is a class for state-space models with input, state, and noise specifications.
+   * UnStateSpace.m is a class for state-space models with parameter uncertainty in addition.
    * UnStateSpace.m is a subclass of StateSpace.m
 
-2. ARXmodel is a class for ARX models with noise specification.
-   * UnARXmodel.m is a class for ARX models with noise specification and parameter uncertainty.
+2. ARXmodel.m is a class for ARX models with input and noise specifications.
+   * UnARXmodel.m is a class for ARX models with parameter uncertainty in addition.
    * UnARXmodel.m is a subclass of ARXmodel.m
 
-3. polymodel.m is a class for (not switched) polynomial models with noise specification.
-   * Unpolymodel.m is a class for (not switched) polynomial models with noise specification and parameter uncertainty.
+3. polymodel.m is a class for (non-switched) polynomial models with noise specifications.
+   * Unpolymodel.m is a class for (non-switched) polynomial models parameter uncertainty in addition.
    * Unpolymodel.m is a subclass of polymodel.m
 
-#####In the folder "Functions":
+4. bounded_noise.m is a function generating l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
 
-1. bounded_noise.m is a function generates l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
+5. swarx_sim.m is a function that generates simulated I/O data for ARX models defined on ARXmodel.m or UnARXmodel.m
+ 
+6. swss_sim.m is a function that generates simulated I/O data for state-space models defined on StateSpace.m or UnStateSpace.m
 
-2. simulates.m is a simulation function which will simulate the systems using the models described by the system classes.
+7. InvalidationARX.m is a function that applies an invalidation algorithm to a non-switched ARX models.
+ 
+8. InvalidationSS.m is a function that applies an invalidation algorithm to a non-switched state-space models.
 
-3. InvalidationARX.m is a function that can apply the invalidation algorithm to an ARX model.
+9. SARX_MILP.m is a function that applies an invalidation algorithm to any switched or non-switched ARX models.
 
-#####Outside of the folders:
+10. SWA_MILP.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
 
-6. ARX_single_invalidation_example.m is a file running for testing the algorithm of system invalidation. The system model used in this code is an ARX model with a single mode (i.e. only one submodel).
+#####In the folder "examples":
+
+Examples for switched and non-switched ARX/state-space model invalidation using different functions.
+
+#####In the folder "extras":
+
+Extra files are inside this folder.
