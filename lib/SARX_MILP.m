@@ -56,7 +56,7 @@ end
 
 %% Input, States, Output dimensions and time horizon 
 [n_y,T] = size(output); % output dimension and time horizon
-n_i = size(input); % input dimension
+n_i = size(input,1); % input dimension
 n_mode = size(SYS.mode,2); % number of modes
 
 %% Use the default solver if it is not specified

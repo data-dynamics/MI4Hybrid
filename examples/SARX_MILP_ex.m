@@ -23,23 +23,15 @@ T=100;
 degree=size(sys.mode.A,3);
 n_u=size(sys.mode.C,2); % Input dimension.
 input=[zeros(n_u,degree) randn(n_u,T-degree)];
-for l = 1:20
-% y(:,1:2) = zeros (2,2);
-% for t = 3:T
-%     y(:,t) = A(:,:,1)*y(:,t-1)+A(:,:,2)*y(:,t-2) + C(:,:,1)*input(:,t-1)...
-%         +C(:,:,2)*input(:,t-2);
-% end
-% % rng('default');
-% load('m_noise.mat')
-% w = (rand(2,T)-0.5)*2*(eps);
-% ym = y+m_noise;
 
-% switchseq = randi(1,1,T);
-
+for l = 1:10
 % Generate data using the system sys, input and switchseq
 [ym,p_noise,m_noise,switchseq]=swarx_sim(sys,input,[],[],mn_bound,[],[],0);
+
+% invalidationARX Approach 
 result=InvalidationARX(sys,input,ym,pn_bound,mn_bound*0.98)
-% Model invalidation
-[Decision, sol,Constraints,e,s]= SARX_MILP(sys,ym,input,inf,100,[0.5 0.5]*0.98, 'cplex');
+
+% MILP Approach
+[Decision, sol,Constraints,e,s]= SARX_MILP(sys,input,ym,[0.5 0.5]*0.98,[100 100 100],'cplex');
 Decision
 end
