@@ -35,3 +35,6 @@ Examples for switched and non-switched ARX/state-space model invalidation using 
 #####In the folder "extras":
 
 Extra files are inside this folder.
+
+####Related publications:
+1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
