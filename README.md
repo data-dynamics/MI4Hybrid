@@ -1,5 +1,7 @@
 #### MI4Hybrid
 
+MI4Hybrid is a model invalidation toolbox for hybrid systems.
+
 #####In the folder "lib":
 
 1. StateSpace.m is a class for state-space models with input, state, and noise specifications.
