@@ -10,7 +10,7 @@ function [y,p_noise,m_noise,switchseq]=swarx_sim(sys,input,ini_reg,...
 %   ini_reg -- initial regressor for ARX models (an n_y-by-n matrix for n_y
 %              outputs and order n)
 %   pn_bound -- an n_y-D vector specifying the upper bound for process noise
-%               where n is the number of outputs
+%               where n_y is the number of outputs
 %   mn_bound -- an n_y-D vector specifying the upper bound for measurement
 %               noise where n_y is the number of outputs
 %   input_bound -- an n_i-D vector specifying the upper bound for inputs
