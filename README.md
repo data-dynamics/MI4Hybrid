@@ -40,3 +40,6 @@ Extra files are inside this folder.
 
 ####Related publications:
 1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
+
+####Acknowledgments:
+This research is supported in part by DARPA grant N66001-14-1- 4045.
