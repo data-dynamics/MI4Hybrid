@@ -150,12 +150,12 @@ for i=1:T % for time horizon T
     x_buffer=zeros(n,1);
     for j=1:n % for n states
         for l=1:n_mono % each new state is calculated from n_mono monomials
-            mono=1; % each monomial is calculated from n+n_i variables
+            mono=1; % each monomial is calculated with n+n_i variables
             for s=1:n
                 mono=mono*x(s)^sys.degmat(l,s);
             end
             for s=1:n_i
-                mono=mono*input(s)^sys.degmat(l,s+n);
+                mono=mono*input(s,i)^sys.degmat(l,s+n);
             end
             x_buffer(j)=x_buffer(j)+sys.coeffmat(j,l)*mono;
         end
