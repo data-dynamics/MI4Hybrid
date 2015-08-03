@@ -18,7 +18,7 @@ function [Decision,sol] = SWA_MILP(SYS,input,output,mn_bound,...
 %               noise where n_y is the dimension of output
 %   input_bound -- an n_i-by-1 vector specifying p-norm bound on input
 %                  values where n_i is number of inputs
-%   state_bound -- an n-by-1 vector specifying infinity norm bound on state 
+%   state_bound -- an n-by-1 vector specifying infinity norm bound on state
 %                  variables, where n is number of states
 %   solver -- MILP solver to be used to solve the optimization problem
 %            -- 'cplex': uses CPLEX solver from IBM (needs to be installed)
@@ -57,7 +57,7 @@ if(size(output,1)~=size(SYS.mode(1).C,1))
     error('The output is not consistent with the model.');
 end
 
-%% Input, States, Output dimensions and time horizon 
+%% Input, States, Output dimensions and time horizon
 [n_y,T] = size(output); % output dimension and time horizon
 n_i = size(input,1); % input dimension
 n_mode = size(SYS.mode,2); % number of modes
@@ -149,13 +149,14 @@ for t = 1:T-1    % time index
         for j = 1:n_y   % constraints for output equation
             Constraint = [Constraint sys(sys_ind).g(j,:)*[X((t-1)* ...
                 n_mode+sys_ind,1:n) e((t-1)*n_mode+sys_ind,j)]'+ ...
-                s(t,sys_ind)*sys(sys_ind).q(j,:)* ...
-                [input(:,t) output(j,t)]'==0];
+                s(t,sys_ind)*(sys(sys_ind).q(j,:)* ...
+                [input(:,t) output(j,t)]'- Mode(sys_ind).f(j))==0];
         end
         for state_ind = 1:n  % constraints for state equation
             Constraint = [Constraint sys(sys_ind).h(state_ind,:)* ...
                 X((t-1)*n_mode+sys_ind,:)'+ ...
-                s(t,sys_ind)*sys(sys_ind).l(state_ind,:)*input(:,t)'==0];
+                s(t,sys_ind)*(sys(sys_ind).l(state_ind,:)*input(:,t)'- ...
+                Mode(sys_ind).g(state_ind)) ==0];
             Constraint = [Constraint norm(X((t-1)*n_mode+sys_ind, ...
                 state_ind),inf)<=M(state_ind)*s(t,sys_ind)];
         end
@@ -172,12 +173,15 @@ for sys_ind = 1: n_mode
     for j = 1:n_y   % constraints for output equation
         Constraint = [Constraint sys(sys_ind).g(j,:)*[X((T-1)*n_mode+ ...
             sys_ind,n+1:2*n) e((T-1)*n_mode+sys_ind,j)]'+ ...
-            s(T,sys_ind)*sys(sys_ind).q(j,:)*[input(:,T) output(j,T)]'==0];
+            s(T,sys_ind)*(sys(sys_ind).q(j,:)*[input(:,T) output(j,T)]' +...
+            Mode(sys_ind).f(j))==0];
     end
     Constraint = [Constraint norm(e((T-1)*n_mode+sys_ind,:),inf)<= ...
         eps*s(T,sys_ind)];
-    Constraint = [Constraint norm(X((T-1)*n_mode+sys_ind,n+1:2*n),inf)<=...
-        M(sys_ind)*s(T,sys_ind)];
+    for state_ind = 1:n
+        Constraint = [Constraint norm(X((T-1)*n_mode+sys_ind,n+state_ind),inf)<=...
+            M(state_ind)*s(T,sys_ind)];
+    end
 end
 Constraint = [Constraint sum(s(T,:))==1];
 
