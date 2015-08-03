@@ -4,6 +4,8 @@ function SMTgen(filename,T,sys,xbnd,nbnd,sysf,xfbnd,nfbnd)
 
 % By: N. Ozay, F. Harirchi
 % Requirements: NUM2STR.m
+% Note: This code only works for the systems with outputs equal to states.
+% It will be more generalized for all state space models.
 % Syntax: SMTgen(filename,T,sys,xbnd,nbnd,sysf,xfbnd,nfbnd)
 
 % Output:
