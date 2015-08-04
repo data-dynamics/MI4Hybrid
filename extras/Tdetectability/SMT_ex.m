@@ -3,8 +3,7 @@
 %% Clear
 clear, close all
 
-addpath('../lib/')
-addpath('../extras/')
+addpath('../../lib/')
 
 %% System model
 
