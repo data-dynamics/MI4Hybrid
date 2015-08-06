@@ -91,7 +91,7 @@ end
 if(length(input)~=length(output))
     error('The input length and output length are not consistent.');
 end
-% Check if the input is consistent with with the model.
+% Check if the input is consistent with the model.
 if(size(input,1)~=size(sys.mode.B,2))
     error('The input is not consistent with the model.');
 end
