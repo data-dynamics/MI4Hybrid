@@ -41,7 +41,7 @@ for i=1:20
 
     % Apply the invalidation function.
     % The noise bound here is smaller than the bound used to generate data.
-    result=InvalidationARX(sys2,input,output,pn_bound,mn_bound*0.95,'mosek');
+    result=invalidation_arx(sys2,input,output,pn_bound,mn_bound*0.95,'mosek');
 
     % Display invalidation result.
     if(result==1)
