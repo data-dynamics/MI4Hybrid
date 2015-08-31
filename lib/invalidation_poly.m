@@ -3,7 +3,7 @@ function [miflag,primal,dual]=invalidation_poly(sys,input,output,...
 
 % This function will test if a non-switched polynomial model is invalidated
 % or not based on the input, output and noise bounds. The function requires
-% the SparsePOP package and SDP solvers such as SEDUMI.
+% the "SparsePOP", "multipoly" packages, and SDP solvers such as SEDUMI.
 %
 % Arguments:
 %   sys -- a user defined polynomial model (see PolyModel.m)
