@@ -1,5 +1,5 @@
-function [miflag,primal,dual]=invalidation_poly_poi(sys,input,...
-    output,pn_bound,mn_bound,state_bound,param)
+function [miflag,primal,dual]=invalidation_poly(sys,input,output,...
+    pn_bound,mn_bound,state_bound,param)
 
 % This function will test if a non-switched polynomial model is invalidated
 % or not based on the input, output and noise bounds. The function requires
@@ -38,15 +38,12 @@ function [miflag,primal,dual]=invalidation_poly_poi(sys,input,...
 % the output is the measurement of states.
 %
 % Syntax:
-%   [miflag,primal,dual]=invalidation_poly_relaxed(sys,input,output,...
-%                           pn_bound,mn_bound);
-%   [miflag,primal,dual]=invalidation_poly_relaxed(sys,input,output,...
-%                           pn_bound,mn_bound,state_bound);
-%   [miflag,primal,dual]=invalidation_poly_relaxed(sys,input,output,...
-%                           pn_bound,mn_bound,state_bound,param);
-%
-% Note: this relaxed version will generate less variables than the complete
-% version, and thus take less time but will be less accurate.
+%   [miflag,primal,dual]=invalidation_poly(sys,input,output,pn_bound,...
+%                           mn_bound);
+%   [miflag,primal,dual]=invalidation_poly(sys,input,output,pn_bound,...
+%                           mn_bound,state_bound);
+%   [miflag,primal,dual]=invalidation_poly(sys,input,output,pn_bound,...
+%                           mn_bound,state_bound,param);
 %
 % Author: MI4Hybrid
 % Date: July 24th, 2015
