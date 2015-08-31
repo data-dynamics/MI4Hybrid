@@ -92,20 +92,17 @@ classdef ARXmodel
                 Ep=eye(n_y);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
-            end
-            if(nargin==3)
+            elseif(nargin==3)
                 pn_norm=zeros(n_y,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
                 Ep=eye(n_y);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
-            end
-            if(nargin==5)
+            elseif(nargin==5)
                 Ep=eye(n_y);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
-            end
-            if(nargin==7)
+            elseif(nargin==7)
                 input_norm=zeros(n_i,1)+inf;
             end
             

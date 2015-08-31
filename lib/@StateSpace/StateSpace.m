@@ -90,26 +90,22 @@ classdef StateSpace
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
-            end
-            if(nargin==6)
+            elseif(nargin==6)
                 pn_norm=zeros(n,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
                 Ep=eye(n);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
-            end
-            if(nargin==8)
+            elseif(nargin==8)
                 Ep=eye(n);
                 Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
-            end
-            if(nargin==10)
+            elseif(nargin==10)
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
-            end
-            if(nargin==11)
+            elseif(nargin==11)
                 state_norm=zeros(n,1)+inf;
             end
             
