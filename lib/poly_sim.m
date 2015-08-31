@@ -1,12 +1,12 @@
 function [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,...
-    mn_bound,input_bound,flag)
+    mn_bound,input_bound,state_bound,flag)
 
 % This function simulates a polynomial model with a giving input sequence.
-% The system output is the measurement of states (see polymodel.m for more
+% The system output is the measurement of states (see PolyModel.m for more
 % information).
 %
 % Arguments:
-%   sys -- a user-defined system class (see polymodel.m)
+%   sys -- a user-defined system class (see PolyModel.m)
 %   input -- input sequence (an n_i-by-T matrix) where n_i is the dimension
 %            of input and T is the time horizon
 %   ini_cond -- initial condition for polynomial models (an n-by-1 column
@@ -17,6 +17,8 @@ function [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,...
 %               noise where n_y is the number of outputs
 %   input_bound -- an n_i-D vector specifying the upper bound for inputs
 %                  where n_i is the number of inputs
+%   state_bound -- an n-D vector specifying the upper bound for states
+%                  where n is the number of states
 %   flag -- the simulation will begin with a fixed initial seed for the
 %           random number generator if flag is set to 1
 % Outputs:
@@ -25,13 +27,15 @@ function [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,...
 %   m_noise -- the generated measurement noise
 %
 % Syntax:
-%   [y,p_noise,m_noise]=swarx_sim(sys,input);
-%   [y,p_noise,m_noise]=swarx_sim(sys,input,ini_cond);
-%   [y,p_noise,m_noise]=swarx_sim(sys,input,ini_cond,pn_bound,mn_bound);
-%   [y,p_noise,m_noise]=swarx_sim(sys,input,ini_cond,pn_bound,mn_bound,...
+%   [y,p_noise,m_noise]=poly_sim(sys,input);
+%   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond);
+%   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,mn_bound);
+%   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,mn_bound,...
 %                                 input_bound);
-%   [y,p_noise,m_noise]=swarx_sim(sys,input,ini_cond,pn_bound,mn_bound,...
-%                                 input_bound,flag);
+%   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,mn_bound,...
+%                                 input_bound,state_bound);
+%   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,mn_bound,...
+%                                 input_bound,state_bound,flag);
 %
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Date: July 22nd, 2015
@@ -53,16 +57,22 @@ if(num_arg==2)
     pn_bound=zeros(n,1);
     mn_bound=zeros(n_y,1);
     input_bound=zeros(n_i,1)+inf;
+    state_bound=zeros(n,1)+inf;
     flag=0;
 elseif(num_arg==3)
     pn_bound=zeros(n,1);
     mn_bound=zeros(n_y,1);
     input_bound=zeros(n_i,1)+inf;
+    state_bound=zeros(n,1)+inf;
     flag=0;
 elseif(num_arg==5)
     input_bound=zeros(n_i,1)+inf;
+    state_bound=zeros(n,1)+inf;
     flag=0;
 elseif(num_arg==6)
+    state_bound=zeros(n,1)+inf;
+    flag=0;
+elseif(num_arg==7)
     flag=0;
 end
 
@@ -78,6 +88,9 @@ if(isempty(mn_bound))
 end
 if(isempty(input_bound))
     input_bound=zeros(n_i,1)+inf;
+end
+if(isempty(state_bound))
+    state_bound=zeros(n,1)+inf;
 end
 if(isempty(flag))
     flag=0;
@@ -99,6 +112,11 @@ if(length(input_bound)==1&&n_i>1)
     warning(['Input bound is a scalar, converted to a vector with '...
         'identical entries.']);
 end
+if(length(state_bound)==1&&n>1)
+    state_bound=ones(n,1)*state_bound;
+    warning(['State bound is a scalar, converted to a vector with '...
+        'identical entries.']);
+end
 
 % Check the bounds.
 if(length(pn_bound)~=n||~isvector(pn_bound))
@@ -109,6 +127,9 @@ if(length(mn_bound)~=n_y||~isvector(mn_bound))
 end
 if(length(input_bound)~=n_i||~isvector(input_bound))
     error('The number of bounds for inputs is not correct.');
+end
+if(length(state_bound)~=n||~isvector(state_bound))
+    error('The number of bounds for states is not correct.');
 end
 
 % Check the input.
@@ -143,9 +164,11 @@ m_noise=bounded_noise(a,k,T);
 
 % Calculate the output.
 n_mono=size(sys.coeffmat,2); % number of monomials
-y=zeros(n_y,T); % pre-allocate memory
+x_trace=zeros(n,T); % pre-allocate memory for states
+y=zeros(n_y,T); % pre-allocate memory for outputs
 x=ini_cond;
 for i=1:T % for time horizon T
+    x_trace(:,i)=x;
     y(:,i)=x+sys.Em*m_noise(:,i);
     x_buffer=zeros(n,1);
     for j=1:n % for n states
@@ -161,6 +184,17 @@ for i=1:T % for time horizon T
         end
     end
     x=x_buffer;
+end
+
+% Check the states.
+for i=1:n
+    if(state_bound(i)~=inf)
+        if(norm(x_trace(i,1:T),sys.state_norm(i))>state_bound(i))
+            warning(['At least one dimension of the state sequence '...
+                'exceeds its bound']);
+            break
+        end
+    end
 end
 
 end

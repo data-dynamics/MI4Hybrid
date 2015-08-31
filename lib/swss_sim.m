@@ -163,6 +163,11 @@ if(isempty(switchseq))
     switchseq=randi(N,[T,1]);
 end
 
+% Check the initial condition.
+if(length(ini_cond)~=n||~isvector(ini_cond))
+    error('The initial condition is not consistent with the model.');
+end
+
 % Creat process noise.
 a=sys.pn_norm;
 k=pn_bound;
