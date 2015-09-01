@@ -42,8 +42,16 @@ Examples for switched and non-switched ARX/state-space model invalidation using 
 
 Extra files are inside this folder.
 
+#### Installation Instructions
+
+This toolbox can be used in MATLAB with the following packages/softwares installed:
+1. YALMIP
+2. Cplex
+3. multipoly
+4. SparsePOP
+
 ####Related publications:
 1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
 
 ####Acknowledgments:
-This research is supported in part by DARPA grant N66001-14-1- 4045.
+This research is supported in part by DARPA grant N66001-14-1-4045.
