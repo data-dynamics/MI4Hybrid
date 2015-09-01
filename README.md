@@ -12,9 +12,9 @@ MI4Hybrid is a model invalidation toolbox for hybrid systems.
    * UnARXmodel.m is a class for ARX models with parameter uncertainty in addition.
    * UnARXmodel.m is a subclass of ARXmodel.m
 
-3. polymodel.m is a class for (non-switched) polynomial models with noise specifications.
-   * Unpolymodel.m is a class for (non-switched) polynomial models parameter uncertainty in addition.
-   * Unpolymodel.m is a subclass of polymodel.m
+3. PolyModel.m is a class for (non-switched) polynomial models with noise specifications.
+   * UnPolyModel.m is a class for (non-switched) polynomial models parameter uncertainty in addition.
+   * UnPolyModel.m is a subclass of PolyModel.m
 
 4. bounded_noise.m is a function generating l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
 
@@ -22,13 +22,17 @@ MI4Hybrid is a model invalidation toolbox for hybrid systems.
  
 6. swss_sim.m is a function that generates simulated I/O data for state-space models defined on StateSpace.m or UnStateSpace.m
 
-7. InvalidationARX.m is a function that applies an invalidation algorithm to a non-switched ARX models.
+7. poly_sim.m is a function that generates simulated I/O data for polynomial models defined on PolyModel.m or UnPolyModel.m
+
+8. invalidation_arx.m is a function that applies an invalidation algorithm to non-switched ARX models.
  
-8. InvalidationSS.m is a function that applies an invalidation algorithm to a non-switched state-space models.
+9. invalidation_ss.m is a function that applies an invalidation algorithm to non-switched state-space models.
 
-9. SARX_MILP.m is a function that applies an invalidation algorithm to any switched or non-switched ARX models.
+10. invalidation_sarx_milp.m is a function that applies an invalidation algorithm to any switched or non-switched ARX models.
 
-10. SWA_MILP.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
+11. invalidation_swa_milp.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
+
+12. invalidation_poly.m is a function that applies an invalidation algorithm to non-switched polynomial models.
 
 #####In the folder "examples":
 
