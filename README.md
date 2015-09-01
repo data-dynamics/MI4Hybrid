@@ -32,8 +32,6 @@ MI4Hybrid is a model invalidation toolbox for hybrid systems.
 
 11. invalidation_swa_milp.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
 
-12. invalidation_poly.m is a function that applies an invalidation algorithm to non-switched polynomial models.
-
 #####In the folder "examples":
 
 Examples for switched and non-switched ARX/state-space model invalidation using different functions.
@@ -45,6 +43,7 @@ Extra files are inside this folder.
 #### Installation Instructions
 
 This toolbox can be used in MATLAB with the following packages/softwares installed:
+
 1. YALMIP
 2. Cplex
 3. multipoly
