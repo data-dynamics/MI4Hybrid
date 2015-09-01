@@ -42,12 +42,10 @@ Extra files are inside this folder.
 
 #### Installation Instructions
 
-This toolbox can be used in MATLAB with the following packages/softwares installed:
+This toolbox can be used in MATLAB with the following necessary packages/softwares installed:
 
 1. YALMIP
 2. Cplex
-3. multipoly
-4. SparsePOP
 
 ####Related publications:
 1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
