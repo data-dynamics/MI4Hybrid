@@ -2,6 +2,15 @@
 
 MI4Hybrid is a model invalidation toolbox for hybrid systems.
 
+####Installation Instructions:
+
+This toolbox can be used in MATLAB with the following necessary packages/softwares installed:
+
+1. [YALMIP](http://users.isy.liu.se/johanl/yalmip/)
+2. [CPLEX](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/)
+ 
+####Contents:
+
 #####In the folder "lib":
 
 1. StateSpace.m is a class for state-space models with input, state, and noise specifications.
@@ -40,12 +49,6 @@ Examples for switched and non-switched ARX/state-space model invalidation using 
 
 Extra files are inside this folder.
 
-#### Installation Instructions
-
-This toolbox can be used in MATLAB with the following necessary packages/softwares installed:
-
-1. YALMIP
-2. Cplex
 
 ####Related publications:
 1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
