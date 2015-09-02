@@ -282,6 +282,6 @@ end
 fprintf(fid, [')) \n']);
 fprintf(fid, ['(check-sat)']);
 
-fprintf(['The file ' filename ' is successfully generated.'])
+fprintf(['The file ' filename ' is successfully generated. \n'])
 
 
