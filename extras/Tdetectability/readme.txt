@@ -4,7 +4,7 @@
 \margl1440\margr1440\vieww20760\viewh9560\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\f0\fs24 \cf0 #### T-Detectability\
+\f0\fs24 \cf0 ####T-Detectability\
 \
 This extras folder contains two functions and one example, with the following tasks:\
 \
@@ -13,6 +13,16 @@ they are defined in .smt2 format. It is a perquisite for SMTgen function.\
 2. SMTgen: Is the main function which receives the system and fault models and generates \
 the .smt2 file.\
 3. SMT_ex: Is an example to show how SMTgen works.\
+\
+\pard\pardeftab720
+\cf0 ####Related publications:\
+1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.\
+ \
+####Acknowledgments:\
+This research is supported in part by DARPA grant N66001-14-1-4045.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
 \pard\pardeftab720
 
 \f1 \cf0 \
