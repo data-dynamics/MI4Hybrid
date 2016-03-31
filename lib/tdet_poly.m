@@ -503,7 +503,9 @@ y=sdpvar(n,T);
 
 % Define the constraints using model equations of "sys".
 const=[];
-sdpvar mono(1,2)
+if n_m>=2
+    sdpvar mono(1,2);
+end
 for i=1:T-1
     current_var=y(:,i)-sys.Em*etam(:,i);
     for j=1:n_m % Calculate all monomials at time point i.
@@ -525,7 +527,9 @@ end
 
 
 % Define the constraints using model equations of "sysf".
-sdpvar monof(1,2)
+if n_mf>=2
+    sdpvar monof(1,2);
+end
 for i=1:T-1
     current_var=y(:,i)-sysf.Em*etamb(:,i);
     for j=1:n_mf % Calculate all monomials at time point i.
@@ -713,7 +717,9 @@ uncer=sdpvar(n,n_m);
 uncer(sys.d_coeffmat==0)=0;
 uncerb=sdpvar(n,n_mf);
 uncerb(sysf.d_coeffmat==0)=0;
-sdpvar mono(1,n_m)
+if n_m >=2
+    sdpvar mono(1,2);
+end
 % Define the constraints using model equations of "sys".
 const=[];
 for i=1:T-1
@@ -736,7 +742,9 @@ for i=1:T-1
 end
 
 % Define the constraints using model equations of "sysf".
-sdpvar monof(1,n_m)
+if n_mf>=2
+    sdpvar monof(1,2);
+end
 for i=1:T-1
     current_var=y(:,i)-sysf.Em*etamb(:,i);
     for j=1:n_mf % Calculate all monomials at time point i.
