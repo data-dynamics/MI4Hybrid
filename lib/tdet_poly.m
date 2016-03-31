@@ -86,6 +86,7 @@ else
     case1='cer';
 end
 
+m_degree = max(sum(sys.degmat,2));
 % Set up default values if some arguments are not specified.
 num_arg=nargin;
 if(num_arg==5)
@@ -120,106 +121,19 @@ elseif(num_arg==13)
     BP=zeros(n,1);
     BPf=zeros(n,1);
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
     param.POPsolver=[];
     verbose=1;
 elseif(num_arg==15)
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
     param.POPsolver=[];
     verbose=1;
 elseif(num_arg==16)
     verbose=1;
 end
-
-% Apply different functions for different cases.
-switch case1
-    case 'cer'
-        [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,...
-            LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose);
-    case 'unc'
-        [tdflag,epsilon]=tdet_poly_unc(sys,sysf,T,BM,BMf,LS,...
-            LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose);
-end
-
-end
-
-%% T-detectability without uncertainty.
-
-function [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,...
-    LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose)
-
-% This function uses noise, state, and input bounds to determine if a fault
-% of a non-switched polynomial model is detectable in T steps. The returned
-% value can also indicate how "far" the fault is from being not detectable.
-%
-% Input:
-%   sys -- a user defined polynomial model (a priori)
-%   sysf -- a user defined fault polynomial model
-%             (see PolyModel.m for details about polynomial models)
-%   T -- time horizon (for T-detectability)
-%   BP -- n-D vector specifying the process noise bound of "sys"
-%   BM -- n-D vector specifying the measurement noise bound of "sys"
-%   BPf -- n-D vector specifying the process noise bound of "sysf"
-%   BMf -- n-D vector specifying the measurement noise bound of "sysf"
-%   LS -- n-D vector specifying the lower bound of states of "sys"
-%   US -- n-D vector specifying the upper bound of states of "sys"
-%   LSf -- n-D vector specifying the lower bound of states of "sysf"
-%   USf -- n-D vector specifying the upper bound of states of "sysf"
-%             (n is the state/output dimension)
-%   LU -- ni-D vector specifying the lower bound of inputs of "sys"
-%   UU -- ni-D vector specifying the upper bound of inputs of "sys"
-%   LUf -- ni-D vector specifying the lower bound of inputs of "sysf"
-%   UUf -- ni-D vector specifying the upper bound of inputs of "sysf"
-%             (ni is the input dimension)
-%   param -- parameter structure for the solver "SparsePOP"
-%            User can refine the solution obtained from the SDP relaxation
-%            by setting the parameter:
-%               param.POPsolver = 'active-set';
-%               param.POPsolver = 'interior-point';
-%               param.POPsolver = 'trust-region-reflective';
-%               param.POPsolver = 'lsqnonlin';
-%            See SparsePOP userGuide.pdf for more information about
-%               param.relaxOrder, param.eqTolerance, and param.scalingSW
-%   verbose -- an integer (varying from 0 to 2) used to control how much
-%              solving information to be printed
-%
-% Output:
-%   tdflag -- a flag indicating if the fault is T-detectable (0 for not
-%             T-detectable and 1 for T-detectable)
-%   epsilon -- optimal solution for a dimension of the measurement noise
-%            bound of "sys" (can be multiple dimensions if those dimensions
-%            of noise are bounded by the same value). If this value is NaN,
-%            it means that the optimization problem is not fesible (and of
-%            course, the model is invalidated).
-%
-% Syntax:
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf);
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
-%                              US,USf);
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
-%                              US,USf,LU,LUf,UU,...
-%                              UUf);
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
-%                              US,USf,LU,LUf,UU,...
-%                              UUf,BP,BPf);
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
-%                              US,USf,LU,LUf,UU,...
-%                              UUf,BP,BPf,param);
-%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
-%                              US,USf,LU,LUf,UU,...
-%                              UUf,BP,BPf,param,verbose);
-%
-% Note: this function will automatically choose which dimension(s) of noise
-% bound to be a variable and minimize it. The function will try to find the
-% maximum number of dimensions that are bounded by the same value and then
-% minimize the value. A tie is broken by choosing the one with the smallest
-% index in the vector BM.
-%
-% Author: MI4Hybrid
-% Date: Oct 26th, 2015
 
 % Check if the system model is valid for this function.
 if(strcmp(sys.mark,'poly')~=1)
@@ -255,9 +169,8 @@ if(num_arg==5)
     BP=zeros(n,1);
     BPf=zeros(n,1);
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
-    param.POPsolver=[];
     verbose=1;
 elseif(num_arg==9)
     LU=zeros(n_i,1)-inf;
@@ -267,23 +180,20 @@ elseif(num_arg==9)
     BP=zeros(n,1);
     BPf=zeros(n,1);
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
-    param.POPsolver=[];
     verbose=1;
 elseif(num_arg==13)
     BP=zeros(n,1);
     BPf=zeros(n,1);
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
-    param.POPsolver=[];
     verbose=1;
 elseif(num_arg==15)
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
-    param.POPsolver=[];
     verbose=1;
 elseif(num_arg==16)
     verbose=1;
@@ -322,7 +232,7 @@ if(isempty(BPf))
 end
 if(isempty(param))
     param.scalingSW=0;
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
     param.eqTolerance=1e-10;
     param.POPsolver=[];
 end
@@ -333,13 +243,10 @@ if(~isfield(param,{'scalingSW'}))
     param.scalingSW=0;
 end
 if(~isfield(param,{'relaxOrder'}))
-    param.relaxOrder=[];
+    param.relaxOrder=floor(m_degree/2)+1;
 end
 if(~isfield(param,{'eqTolerance'}))
     param.eqTolerance=1e-10;
-end
-if(~isfield(param,{'POPsolver'}))
-    param.POPsolver=[];
 end
 
 % Convert scalars to vectors.
@@ -470,8 +377,97 @@ if(sum(BMf<0)~=0)
         'have negative value.']);
 end
 
+
+% Apply different functions for different cases.
+switch case1
+    case 'cer'
+        [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,...
+            LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose);
+    case 'unc'
+        [tdflag,epsilon]=tdet_poly_unc(sys,sysf,T,BM,BMf,LS,...
+            LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose);
+end
+
+end
+
+%% T-detectability without uncertainty.
+
+function [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,...
+    LSf,US,USf,LU,LUf,UU,UUf,BP,BPf,param,verbose)
+
+% This function uses noise, state, and input bounds to determine if a fault
+% of a non-switched polynomial model is detectable in T steps. The returned
+% value can also indicate how "far" the fault is from being not detectable.
+%
+% Input:
+%   sys -- a user defined polynomial model (a priori)
+%   sysf -- a user defined fault polynomial model
+%             (see PolyModel.m for details about polynomial models)
+%   T -- time horizon (for T-detectability)
+%   BP -- n-D vector specifying the process noise bound of "sys"
+%   BM -- n-D vector specifying the measurement noise bound of "sys"
+%   BPf -- n-D vector specifying the process noise bound of "sysf"
+%   BMf -- n-D vector specifying the measurement noise bound of "sysf"
+%   LS -- n-D vector specifying the lower bound of states of "sys"
+%   US -- n-D vector specifying the upper bound of states of "sys"
+%   LSf -- n-D vector specifying the lower bound of states of "sysf"
+%   USf -- n-D vector specifying the upper bound of states of "sysf"
+%             (n is the state/output dimension)
+%   LU -- ni-D vector specifying the lower bound of inputs of "sys"
+%   UU -- ni-D vector specifying the upper bound of inputs of "sys"
+%   LUf -- ni-D vector specifying the lower bound of inputs of "sysf"
+%   UUf -- ni-D vector specifying the upper bound of inputs of "sysf"
+%             (ni is the input dimension)
+%   param -- parameter structure for the solver "SparsePOP"
+%            User can refine the solution obtained from the SDP relaxation
+%            by setting the parameter:
+%               param.POPsolver = 'active-set';
+%               param.POPsolver = 'interior-point';
+%               param.POPsolver = 'trust-region-reflective';
+%               param.POPsolver = 'lsqnonlin';
+%            See SparsePOP userGuide.pdf for more information about
+%               param.relaxOrder, param.eqTolerance, and param.scalingSW
+%   verbose -- an integer (varying from 0 to 2) used to control how much
+%              solving information to be printed
+%
+% Output:
+%   tdflag -- a flag indicating if the fault is T-detectable (0 for not
+%             T-detectable and 1 for T-detectable)
+%   epsilon -- optimal solution for a dimension of the measurement noise
+%            bound of "sys" (can be multiple dimensions if those dimensions
+%            of noise are bounded by the same value). If this value is NaN,
+%            it means that the optimization problem is not fesible (and of
+%            course, the model is invalidated).
+%
+% Syntax:
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf);
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
+%                              US,USf);
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
+%                              US,USf,LU,LUf,UU,...
+%                              UUf);
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
+%                              US,USf,LU,LUf,UU,...
+%                              UUf,BP,BPf);
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
+%                              US,USf,LU,LUf,UU,...
+%                              UUf,BP,BPf,param);
+%   [tdflag,epsilon]=tdet_poly_cer(sys,sysf,T,BM,BMf,LS,LSf,...
+%                              US,USf,LU,LUf,UU,...
+%                              UUf,BP,BPf,param,verbose);
+%
+%
+% Author: MI4Hybrid
+% Date: Oct 26th, 2015
+
+
+
 % Find repeated values in the vector of measurement noise bound.
 % Find normalization diagonal matrix for measurement noise bounds.
+n=size(sys.coeffmat,1); % state/output dimension
+n_i=size(sys.degmat,2)-n; % input dimension
+n_m=size(sys.coeffmat,2); % number of monomials of "sys"
+n_mf=size(sysf.coeffmat,2); % number of monomials of "sysf"
 T_c = zeros(n,n);
 for i = 1:n
     if BM(i)~=0
@@ -504,8 +500,10 @@ u=sdpvar(n_i,T-1);
 u(temp==0,:)=0;
 y=sdpvar(n,T);
 
+
 % Define the constraints using model equations of "sys".
 const=[];
+sdpvar mono(1,2)
 for i=1:T-1
     current_var=y(:,i)-sys.Em*etam(:,i);
     for j=1:n_m % Calculate all monomials at time point i.
@@ -525,7 +523,9 @@ for i=1:T-1
     const=[const,poly+sys.Ep*etap(:,i)-y(:,i+1)+sys.Em*etam(:,i+1)==0];
 end
 
+
 % Define the constraints using model equations of "sysf".
+sdpvar monof(1,2)
 for i=1:T-1
     current_var=y(:,i)-sysf.Em*etamb(:,i);
     for j=1:n_mf % Calculate all monomials at time point i.
@@ -651,264 +651,17 @@ function [tdflag,epsilon]=tdet_poly_unc(sys,sysf,T,BM,BMf,LS,...
 %                              US,USf,LU,LUf,UU,...
 %                              UUf,BP,BPf,param,verbose);
 %
-% Note: this function will automatically choose which uncertainty term(s)
-% to minimize. The function will try to find the maximum number of terms
-% that are bounded by the same value and then minimize the value. A tie is
-% broken by choosing the term(s) with the smallest column index, then the
-% smallest row index in the uncertainty matrix (specified by the class
-% UnPolyModel.m).
 %
 % Author: MI4Hybrid
 % Date: Oct 27th, 2015
 
-% Check if the system model is valid for this function.
-if(strcmp(sys.mark,'poly')~=1)
-    error('The a priori model must be a (non-switched) polynomial model.');
-end
-if(strcmp(sysf.mark,'poly')~=1)
-    error('The fault model must be a (non-switched) polynomial model.');
-end
+
 
 % Obtain system parameters.
 n=size(sys.coeffmat,1); % state/output dimension
-if(n~=size(sysf.coeffmat,1))
-    error('The two models must have the same state/output dimension.');
-end
 n_i=size(sys.degmat,2)-n; % input dimension
-if(n_i~=size(sysf.degmat,2)-n)
-    error('The two models must have the same input dimension.');
-end
 n_m=size(sys.coeffmat,2); % number of monomials of "sys"
 n_mf=size(sysf.coeffmat,2); % number of monomials of "sysf"
-
-% Set up default values if some arguments are not specified.
-num_arg=nargin;
-if(num_arg==5)
-    LS=zeros(n,1)-inf;
-    LSf=zeros(n,1)-inf;
-    US=zeros(n,1)+inf;
-    USf=zeros(n,1)+inf;
-    LU=zeros(n_i,1)-inf;
-    LUf=zeros(n_i,1)-inf;
-    UU=zeros(n_i,1)+inf;
-    UUf=zeros(n_i,1)+inf;
-    BP=zeros(n,1);
-    BPf=zeros(n,1);
-    param.scalingSW=0;
-    param.relaxOrder=[];
-    param.eqTolerance=1e-10;
-    param.POPsolver=[];
-    verbose=1;
-elseif(num_arg==9)
-    LU=zeros(n_i,1)-inf;
-    LUf=zeros(n_i,1)-inf;
-    UU=zeros(n_i,1)+inf;
-    UUf=zeros(n_i,1)+inf;
-    BP=zeros(n,1);
-    BPf=zeros(n,1);
-    param.scalingSW=0;
-    param.relaxOrder=[];
-    param.eqTolerance=1e-10;
-    param.POPsolver=[];
-    verbose=1;
-elseif(num_arg==13)
-    BP=zeros(n,1);
-    BPf=zeros(n,1);
-    param.scalingSW=0;
-    param.relaxOrder=[];
-    param.eqTolerance=1e-10;
-    param.POPsolver=[];
-    verbose=1;
-elseif(num_arg==15)
-    param.scalingSW=0;
-    param.relaxOrder=[];
-    param.eqTolerance=1e-10;
-    param.POPsolver=[];
-    verbose=1;
-elseif(num_arg==16)
-    verbose=1;
-end
-
-% Set up default values for empty arguments.
-if(isempty(LS))
-    LS=zeros(n,1)-inf;
-end
-if(isempty(LSf))
-    LSf=zeros(n,1)-inf;
-end
-if(isempty(US))
-    US=zeros(n,1)+inf;
-end
-if(isempty(USf))
-    USf=zeros(n,1)+inf;
-end
-if(isempty(LU))
-    LU=zeros(n,1)-inf;
-end
-if(isempty(LUf))
-    LUf=zeros(n,1)-inf;
-end
-if(isempty(UU))
-    UU=zeros(n,1)+inf;
-end
-if(isempty(UUf))
-    UUf=zeros(n,1)+inf;
-end
-if(isempty(BP))
-    BP=zeros(n,1);
-end
-if(isempty(BPf))
-    BPf=zeros(n,1);
-end
-if(isempty(param))
-    param.scalingSW=0;
-    param.relaxOrder=[];
-    param.eqTolerance=1e-10;
-    param.POPsolver=[];
-end
-if(isempty(verbose))
-    verbose=1;
-end
-if(~isfield(param,{'scalingSW'}))
-    param.scalingSW=0;
-end
-if(~isfield(param,{'relaxOrder'}))
-    param.relaxOrder=[];
-end
-if(~isfield(param,{'eqTolerance'}))
-    param.eqTolerance=1e-10;
-end
-if(~isfield(param,{'POPsolver'}))
-    param.POPsolver=[];
-end
-
-% Convert scalars to vectors.
-if(length(BP)==1&&n>1)
-    BP=ones(n,1)*BP;
-    warning(['Bound for process noise of the a priori model is a scalar'...
-        ', converted to a vector with identical entries.']);
-end
-if(length(BPf)==1&&n>1)
-    BPf=ones(n,1)*BPf;
-    warning(['Bound for process noise of the fault model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(BM)==1&&n>1)
-    BM=ones(n,1)*BM;
-    warning(['Bound for measurement noise of the a priori model is a '...
-        'scalar, converted to a vector with identical entries.']);
-end
-if(length(BMf)==1&&n>1)
-    BMf=ones(n,1)*BMf;
-    warning(['Bound for measurement noise of the fault model is a '...
-        'scalar, converted to a vector with identical entries.']);
-end
-if(length(LS)==1&&n>1)
-    LS=ones(n,1)*LS;
-    warning(['Lower state bound of the a priori model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(LSf)==1&&n>1)
-    LSf=ones(n,1)*LSf;
-    warning(['Lower state bound of the fault model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(US)==1&&n>1)
-    US=ones(n,1)*US;
-    warning(['Upper state bound of the a priori model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(USf)==1&&n>1)
-    USf=ones(n,1)*USf;
-    warning(['Upper state bound of the fault model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(LU)==1&&n_i>1)
-    LU=ones(n_i,1)*LU;
-    warning(['Lower input bound of the a priori model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(LUf)==1&&n_i>1)
-    LUf=ones(n_i,1)*LUf;
-    warning(['Lower input bound of the fault model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(UU)==1&&n_i>1)
-    UU=ones(n_i,1)*UU;
-    warning(['Upper input bound of the a priori model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-if(length(UUf)==1&&n_i>1)
-    UUf=ones(n_i,1)*UUf;
-    warning(['Upper input bound of the fault model is a scalar, '...
-        'converted to a vector with identical entries.']);
-end
-
-% Check the bounds.
-if(length(BP)~=n||~isvector(BP))
-    error(['The bound dimension for process noise of the a priori model'...
-        ' is not correct.']);
-end
-if(length(BPf)~=n||~isvector(BPf))
-    error(['The bound dimension for process noise of the fault model '...
-        'is not correct.']);
-end
-if(length(BM)~=n||~isvector(BM))
-    error(['The bound dimension for measurement noise of the a priori '...
-        'model is not correct.']);
-end
-if(length(BMf)~=n||~isvector(BMf))
-    error(['The bound dimension for measurement noise of the fault '...
-        'model is not correct.']);
-end
-if(length(LS)~=n||~isvector(LS))
-    error(['The lower bound dimension for states of the a priori model'...
-        ' is not correct.']);
-end
-if(length(LSf)~=n||~isvector(LSf))
-    error(['The lower bound dimension for states of the fault model is'...
-        ' not correct.']);
-end
-if(length(US)~=n||~isvector(US))
-    error(['The upper bound dimension for states of the a priori model'...
-        ' is not correct.']);
-end
-if(length(USf)~=n||~isvector(USf))
-    error(['The upper bound dimension for states of the fault model is'...
-        ' not correct.']);
-end
-if(length(LU)~=n||~isvector(LU))
-    error(['The lower bound dimension for inputs of the a priori model'...
-        ' is not correct.']);
-end
-if(length(LUf)~=n||~isvector(LUf))
-    error(['The lower bound dimension for inputs of the fault model is'...
-        ' not correct.']);
-end
-if(length(UU)~=n||~isvector(UU))
-    error(['The upper bound dimension for inputs of the a priori model'...
-        ' is not correct.']);
-end
-if(length(UUf)~=n||~isvector(UUf))
-    error(['The upper bound dimension for inputs of the fault model is'...
-        ' not correct.']);
-end
-if(sum(BP<0)~=0)
-    error(['The process noise bound of the a priori model should not '...
-        'have negative value.']);
-end
-if(sum(BPf<0)~=0)
-    error(['The process noise bound of the fault model should not have '...
-        'negative value.']);
-end
-if(sum(BM<0)~=0)
-    error(['The measurement noise bound of the a priori model should '...
-        'not have negative value.']);
-end
-if(sum(BMf<0)~=0)
-    error(['The measurement noise bound of the fault model should not '...
-        'have negative value.']);
-end
 
 T_c = zeros(n,n);
 for i = 1:n
@@ -960,7 +713,7 @@ uncer=sdpvar(n,n_m);
 uncer(sys.d_coeffmat==0)=0;
 uncerb=sdpvar(n,n_mf);
 uncerb(sysf.d_coeffmat==0)=0;
-
+sdpvar mono(1,n_m)
 % Define the constraints using model equations of "sys".
 const=[];
 for i=1:T-1
@@ -983,6 +736,7 @@ for i=1:T-1
 end
 
 % Define the constraints using model equations of "sysf".
+sdpvar monof(1,n_m)
 for i=1:T-1
     current_var=y(:,i)-sysf.Em*etamb(:,i);
     for j=1:n_mf % Calculate all monomials at time point i.
@@ -1043,7 +797,7 @@ end
 
 % Set up the solver settings, and solve the optimization problem.
 ops=sdpsettings('verbose',verbose,'solver','sparsepop',...
-    'sparsepop.relaxOrder',2,'sparsepop.eqTolerance',param.eqTolerance);
+    'sparsepop.relaxOrder',param.relaxOrder,'sparsepop.eqTolerance',param.eqTolerance);
 
 optimize(const,obj,ops);
 epsilon=double(eps);
