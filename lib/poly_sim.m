@@ -1,12 +1,12 @@
 function [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,...
     mn_bound,input_bound,state_bound,flag)
 
-% This function simulates a polynomial model with a giving input sequence.
-% The system output is the measurement of states (see PolyModel.m for more
-% information).
+% This function simulates a (uncertain) polynomial model with a giving 
+% input sequence. The system output is the measurement of states (see
+% PolyModel.m or UnPolyModel for more information).
 %
 % Arguments:
-%   sys -- a user-defined system class (see PolyModel.m)
+%   sys -- a user-defined system class (see PolyModel.m, UnPolyModel.m)
 %   input -- input sequence (an n_i-by-T matrix) where n_i is the dimension
 %            of input and T is the time horizon
 %   ini_cond -- initial condition for polynomial models (an n-by-1 column
@@ -37,8 +37,8 @@ function [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,...
 %   [y,p_noise,m_noise]=poly_sim(sys,input,ini_cond,pn_bound,mn_bound,...
 %                                 input_bound,state_bound,flag);
 %
-% Author: Z. Luo, F. Harirchi and N. Ozay
-% Date: July 22nd, 2015
+% Author: MI4Hybrid
+% Date: Mar 29th, 2016
 
 % Check if the system model is valid for this function.
 if(strcmp(sys.mark,'poly')~=1)
@@ -152,18 +152,32 @@ if(length(ini_cond)~=n||~isvector(ini_cond))
     error('The initial condition is not consistent with the model.');
 end
 
-% Creat process noise.
+% Create process noise.
 a=sys.pn_norm;
 k=pn_bound;
 p_noise=bounded_noise(a,k,T,flag);
 
-% Creat measurement noise.
+% Create measurement noise.
 a=sys.mn_norm;
 k=mn_bound;
 m_noise=bounded_noise(a,k,T);
 
-% Calculate the output.
 n_mono=size(sys.coeffmat,2); % number of monomials
+
+% Create Uncertainty matrix.
+if(isprop(sys,'d_coeffmat'))
+    a=inf;
+    for i = 1:n
+        for j = 1:n_mono
+            unc_coeffmat(i,j)=bounded_noise(a,sys.d_coeffmat(i,j),1);
+        end
+    end
+else
+    unc_coeffmat = zeros(n,n_mono);
+end
+
+% Calculate the output.
+
 x_trace=zeros(n,T); % pre-allocate memory for states
 y=zeros(n_y,T); % pre-allocate memory for outputs
 x=ini_cond;
@@ -180,8 +194,10 @@ for i=1:T % for time horizon T
             for s=1:n_i
                 mono=mono*input(s,i)^sys.degmat(l,s+n);
             end
-            x_buffer(j)=x_buffer(j)+sys.coeffmat(j,l)*mono;
-        end
+            
+            x_buffer(j)=x_buffer(j)+sys.coeffmat(j,l)*mono+ ...
+                unc_coeffmat(j,l)*mono;
+        end 
     end
     x=x_buffer;
 end
