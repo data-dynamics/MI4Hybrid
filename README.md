@@ -57,7 +57,7 @@ Extra files are inside this folder.
 ####Related publications:
 1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", IFAC ADHS, 2015.
 
-2. F. Harirchi, Z. Luo and N. Ozay, "Model (In)validation and Fault Detection for Systems with Polynomial State-Space Models", IEEE ACC, 2016.
+2. F. Harirchi, Z. Luo and N. Ozay, "Model (In)validation and Fault Detection for Systems with Polynomial State-Space Models", ACC, 2016.
 
 ####Acknowledgments:
 This research is supported in part by DARPA grant N66001-14-1-4045.
