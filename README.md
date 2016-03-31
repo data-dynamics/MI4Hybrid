@@ -41,9 +41,13 @@ This toolbox can be used in MATLAB with the following necessary packages/softwar
 
 11. invalidation_swa_milp.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
 
+12. invalidation_poly.m is a function that appplies an invalidation algorithm to any certain or uncertain polynomial state-space models.
+
+13. tdet_poly.m is a function that checks whether a fault model sysf is T-detectable for a system model sys for a given T.
+
 #####In the folder "examples":
 
-Examples for switched and non-switched ARX/state-space model invalidation using different functions.
+Examples for switched, non-switched ARX/state-space and polynomial model invalidation using different functions.
 
 #####In the folder "extras":
 
@@ -51,7 +55,9 @@ Extra files are inside this folder.
 
 
 ####Related publications:
-1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", ADHS, 2015.
+1. F. Harirchi and N. Ozay, "Model Invalidation for Switched Affine Systems with Applications to Fault and Anomaly Detection", IFAC ADHS, 2015.
+
+2. F. Harirchi, Z. Luo and N. Ozay, "Model (In)validation and Fault Detection for Systems with Polynomial State-Space Models", IEEE ACC, 2016.
 
 ####Acknowledgments:
 This research is supported in part by DARPA grant N66001-14-1-4045.
