@@ -8,6 +8,8 @@ This toolbox can be used in MATLAB with the following necessary packages/softwar
 
 1. [YALMIP](http://users.isy.liu.se/johanl/yalmip/)
 2. [CPLEX](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/)
+3. [SparsePOP] (http://www.is.titech.ac.jp/~kojima/SparsePOP/)
+
  
 ####Contents:
 
