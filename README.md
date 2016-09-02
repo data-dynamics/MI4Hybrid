@@ -27,29 +27,35 @@ This toolbox can be used in MATLAB with the following necessary packages/softwar
    * UnPolyModel.m is a class for (non-switched) polynomial models parameter uncertainty in addition.
    * UnPolyModel.m is a subclass of PolyModel.m
 
-4. bounded_noise.m is a function generating l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
+4. PWAModel.m is a class for (non-switched) piece-wise affine models without noise
 
-5. swarx_sim.m is a function that generates simulated I/O data for ARX models defined on ARXmodel.m or UnARXmodel.m
+5. bounded_noise.m is a function generating l_p norm bounded noise (a matrix) whose number of rows is the noise dimension and number of columns is the time horizon.
+
+6. swarx_sim.m is a function that generates simulated I/O data for ARX models defined on ARXmodel.m or UnARXmodel.m
  
-6. swss_sim.m is a function that generates simulated I/O data for state-space models defined on StateSpace.m or UnStateSpace.m
+7. swss_sim.m is a function that generates simulated I/O data for state-space models defined on StateSpace.m or UnStateSpace.m
 
-7. poly_sim.m is a function that generates simulated I/O data for polynomial models defined on PolyModel.m or UnPolyModel.m
+8. poly_sim.m is a function that generates simulated I/O data for polynomial models defined on PolyModel.m or UnPolyModel.m
 
-8. invalidation_arx.m is a function that applies an invalidation algorithm to non-switched ARX models.
+9. pwa_sim.m is a function that generates simulated I/O data for piece-wise affine models defined on PWAModel.m
+
+10. invalidation_arx.m is a function that applies an invalidation algorithm to non-switched ARX models.
  
-9. invalidation_ss.m is a function that applies an invalidation algorithm to non-switched state-space models.
+11. invalidation_ss.m is a function that applies an invalidation algorithm to non-switched state-space models.
 
-10. invalidation_sarx_milp.m is a function that applies an invalidation algorithm to any switched or non-switched ARX models.
+12. invalidation_sarx_milp.m is a function that applies an invalidation algorithm to any switched or non-switched ARX models.
 
-11. invalidation_swa_milp.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
+13. invalidation_swa_milp.m is a function that applies an invalidation algorithm to any switched or non-switched state-space models.
 
-12. invalidation_poly.m is a function that appplies an invalidation algorithm to any certain or uncertain polynomial state-space models.
+14. invalidation_poly.m is a function that applies an invalidation algorithm to any certain or uncertain polynomial state-space models.
 
-13. tdet_poly.m is a function that checks whether a fault model sysf is T-detectable for a system model sys for a given T.
+15. invalidation_pwa.m is a function that applies an invalidation algorithm to any certain piece-wise affine models.
+
+16. tdet_poly.m is a function that checks whether a fault model sysf is T-detectable for a system model sys for a given T.
 
 #####In the folder "examples":
 
-Examples for switched, non-switched ARX/state-space and polynomial model invalidation using different functions.
+Examples for switched, non-switched ARX/state-space, polynomial and PWA model invalidation using different functions.
 
 #####In the folder "extras":
 
