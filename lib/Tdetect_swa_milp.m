@@ -54,7 +54,7 @@ end
 
 %% Check if the fault model is valid for this function
 if(strcmp(SYS_f.mark,'ss')~=1&&strcmp(SYS_f.mark,'swss')~=1)
-    error('The system model must be a state-space model.');
+    error('The fault model must be a state-space model.');
 end
 
 
@@ -164,11 +164,11 @@ end
 if(size(state_high,1)==1&&n>1)
     if(size(state_high,2)==1)
         state_high=ones(n,2)*state_high;
-        warning(['State upper bound is a scalar, converted to a vector with '...
+        warning(['State upperbound is a scalar, converted to a vector with '...
         'identical entries.']);
     elseif (size(state_high,2)==2)
         state_high=[ones(n,1)*state_high(1,1) ones(n,1)*state_high(1,2)];
-        warning(['State bound is a scalar, converted to a vector with '...
+        warning(['State upperbound is a scalar, converted to a vector with '...
         'identical entries.']);
     else
     error(['state_up dimensions are not consistent.']);
@@ -205,7 +205,7 @@ for i = 1: n_mode
     Mode(i).g = SYS.mode(i).g;
 end
 
-%% Initiate system modes
+%% Initiate fault modes
 for i = 1: nf_mode
     fMode(i).A = SYS_f.mode(i).A;
     fMode(i).B = SYS_f.mode(i).B;
