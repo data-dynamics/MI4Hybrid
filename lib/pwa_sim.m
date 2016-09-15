@@ -40,7 +40,7 @@ function [y,x,p_noise,m_noise,switchseq]=pwa_sim(sys,input,ini_cond,...
 %
 % Author: Z. Luo, F. Harirchi and N. Ozay
 % Modified: J. Liu
-% Date: Aug 15th, 2016
+% Date: Sep 15th, 2016
 
 % Obtain model/input information.
 num_arg=nargin;
@@ -137,15 +137,15 @@ end
 if(size(input,1)~=n_i)
     error('The input dimension is not correct.');
 end
-% for i=1:n_i
-%     if(input_bound(i)~=inf)
-%         if(norm(input(i,:),sys.input_norm(i))>input_bound(i))
-%             warning(['At least one dimension of the input sequence '...
-%                 'exceeds its bound']);
-%             break
-%         end
-%     end
-% end
+for i=1:n_i
+    if(input_bound(i)~=inf)
+        if(norm(input(i,:),sys.input_norm(i))>input_bound(i))
+            warning(['At least one dimension of the input sequence '...
+                'exceeds its bound']);
+            break
+        end
+    end
+end
 T=size(input,2); % time horizon
 
 %generate a null switchseq
@@ -157,16 +157,16 @@ if(length(ini_cond)~=n||~isvector(ini_cond))
 end
 
 % Creat process noise. %ASSUMEING NO NOISE
-% a=sys.pn_norm;
-% k=pn_bound;
-% p_noise=bounded_noise(a,k,T,flag);
-p_noise = zeros(n_i,T);
+a=sys.pn_norm;
+k=pn_bound;
+p_noise=bounded_noise(a,k,T,flag);
+% p_noise = zeros(n_i,T);
 
 % Creat measurement noise. %ASSUMEING NO NOISE
-% a=sys.mn_norm;
-% k=mn_bound;
-% m_noise=bounded_noise(a,k,T);
-m_noise = zeros(n_y,T);
+a=sys.mn_norm;
+k=mn_bound;
+m_noise=bounded_noise(a,k,T);
+% m_noise = zeros(n_y,T);
 
 % Calculate the output.
 y=zeros(n_y,T); % pre-allocate memory
@@ -183,9 +183,9 @@ for i=1:T
         sys.mode(switchseq(i)).g;
     x(:,i+1)=sys.mode(switchseq(i)).A*x(:,i)+...
         sys.mode(switchseq(i)).B*input(:,i)+sys.mode(switchseq(i)).f+...
-        p_noise(:,i);
+        sys.Ep*p_noise(:,i);
 end
-y=y+m_noise;
+y=y+sys.Em*m_noise;
 
 % Check the state.
 for i=1:n
