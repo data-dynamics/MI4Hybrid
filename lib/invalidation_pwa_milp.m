@@ -1,4 +1,4 @@
-function [Decision,sol] = invalidation_pwa_milp(SYS,input,output,mn_bound,...
+function [Decision,sol] = invalidation_pwa_milp(SYS,input,output,pn_bound,mn_bound,...
     input_bound,state_bound,solver)
 
 % This function implements MILP-based model invalidation approach for the
@@ -12,6 +12,8 @@ function [Decision,sol] = invalidation_pwa_milp(SYS,input,output,mn_bound,...
 %            of input and T is time horizon
 %   output -- output sequence (an n_y-by-T matrix) where n_y is the
 %             dimension of output and T is time horizon
+%   pn_bound -- an n-by-1 vector specifying the bound for processing
+%               noise where n is the dimension of states
 %   mn_bound -- an n_y-by-1 vector specifying the bound for measurement
 %               noise where n_y is the dimension of output
 %   input_bound -- an n_i-by-1 vector specifying p-norm bound on input
@@ -32,13 +34,13 @@ function [Decision,sol] = invalidation_pwa_milp(SYS,input,output,mn_bound,...
 %   sol -- A solution structure that is the output of YALMIP
 %
 % Syntax:
-%   Decision = invalidation_pwa_milp(SYS,input,output,mn_bound,input_bound,state_bound);
-%   Decision = invalidation_pwa_milp(SYS,input,output,mn_bound,input_bound,...
+%   Decision = invalidation_pwa_milp(SYS,input,output,pn_bound,mn_bound,input_bound,state_bound);
+%   Decision = invalidation_pwa_milp(SYS,input,output,pn_bound,mn_bound,input_bound,...
 %                       state_bound,solver);
 %
 % Author: MI4Hybrid
 % Modified: J. Liu
-% Date: Aug 15th, 2016
+% Date: Sep 14th, 2016
 
 %% Check if the system model is valid for this function
 if(strcmp(SYS.mark,'pwa')~=1)
@@ -56,19 +58,22 @@ if(size(output,1)~=size(SYS.mode(1).C,1))
     error('The output is not consistent with the model.');
 end
 
-%% Input, States, Output dimensions and time horizon
+%% Input, States, Output dimensions ,hyperplane and time horizon
 [n_y,T] = size(output); % output dimension and time horizon
 n_i = size(input,1); % input dimension
 n_mode = size(SYS.mode,2); % number of modes
 n = size(SYS.mode(1).A,1); % state dimension
-n_hyper = size(SYS.mode(1).P,1);
+n_hyper = size(SYS.mode(1).P,1);%number of hyperplane
 
 %% Use the default solver if it is not specified
-if(nargin==6)
+if(nargin==7)
     solver='gurobi';
 end
 
 %% Set up default values for empty paramters
+if(isempty(pn_bound))
+    pn_bound=zeros(n,1);
+end
 if(isempty(mn_bound))
     mn_bound=zeros(n_y,1);
 end
@@ -83,6 +88,11 @@ if(isempty(solver))
 end
 
 %% Convert scalars to vectors
+if(length(pn_bound)==1&&n>1)
+    pn_bound=ones(n,1)*mn_bound;
+    warning(['Bound for measurement noise is a scalar, converted to'...
+        ' a vector with identical entries.']);
+end
 if(length(mn_bound)==1&&n_y>1)
     mn_bound=ones(n_y,1)*mn_bound;
     warning(['Bound for measurement noise is a scalar, converted to'...
@@ -100,6 +110,9 @@ if(length(state_bound)==1&&n>1)
 end
 
 %% Check the bounds
+if(length(pn_bound)~=n||~isvector(pn_bound))
+    error('The number of bounds for processing noise is not correct.');
+end
 if(length(mn_bound)~=n_y||~isvector(mn_bound))
     error('The number of bounds for measurement noise is not correct.');
 end
@@ -121,6 +134,7 @@ for i = 1: n_mode
 end
 M = state_bound;
 eps = mn_bound;
+gamma = pn_bound;
 
 %% Checking input bounds
 for i = 1:n_i
@@ -135,15 +149,16 @@ end
 for i = 1:n_mode
     sys(i).g = [-Mode(i).C -ones(n_y,1)];
     sys(i).q = [-Mode(i).D ones(n_y,1)];
-    sys(i).h = [-Mode(i).A eye(n)];
+    sys(i).h = [-Mode(i).A eye(n) -ones(n,1)];
     sys(i).l = [-Mode(i).B];
     sys(i).P = SYS.mode(i).P;
     sys(i).M = SYS.mode(i).M;
 end
 
 s = binvar(T,n_mode); %sequence matrix
-e = sdpvar(n_mode*T,n_y); %
-X = sdpvar(n_mode*T,2*n); %
+delta = sdpvar(n_mode*T,n); %process error
+e = sdpvar(n_mode*T,n_y); %measurement error
+X = sdpvar(n_mode*T,2*n); %states: [x(k)|x(k+1)]
 
 Constraint = [];
 for t = 1:T-1    % time index
@@ -156,7 +171,7 @@ for t = 1:T-1    % time index
         end
         for state_ind = 1:n  % constraints for state equation
             Constraint = [Constraint sys(sys_ind).h(state_ind,:)* ...
-                X((t-1)*n_mode+sys_ind,:)'+ ...
+                [X((t-1)*n_mode+sys_ind,:) delta((t-1)*n_mode+sys_ind,state_ind)]'+ ...
                 s(t,sys_ind)*(sys(sys_ind).l(state_ind,:)*input(:,t)'- ...
                 Mode(sys_ind).f(state_ind)) ==0];
             Constraint = [Constraint norm(X((t-1)*n_mode+sys_ind, ...
@@ -167,7 +182,9 @@ for t = 1:T-1    % time index
                 X((t-1)*n_mode+sys_ind,1:n)' + ...
                 s(t,sys_ind)*sys(sys_ind).M(hyper_ind) <=0 ]; 
         end
-            
+        
+        Constraint = [Constraint norm(delta((t-1)*n_mode+sys_ind,:),inf)<=...
+            gamma*s(t,sys_ind)];
         Constraint = [Constraint norm(e((t-1)*n_mode+sys_ind,:),inf)<=...
             eps*s(t,sys_ind)];
     end
