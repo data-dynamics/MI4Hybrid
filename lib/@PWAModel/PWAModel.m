@@ -1,6 +1,4 @@
 classdef PWAModel
-    % Beta version: no process noise and measurement noise considered
-    %
     % The class represents a discrete-time piecewise swith affine(PWA) 
     % system model. A general PWA system with a switching
     % sequence sigma has the following form:
