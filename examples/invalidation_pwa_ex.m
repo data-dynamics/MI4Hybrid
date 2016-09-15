@@ -22,7 +22,7 @@ M = [-1,1];
 sys = PWAModel(A,B,C,D,P,M,f,g);
 
 % Time Horizon
-T = 100;
+T = 10;
 
 % Generate input & switching sequence
 input = 10*randn(1,T);
@@ -33,6 +33,18 @@ figure(1),plot(x(1,:),x(2,:)),hold on,plot([2,-2],[-1,3],'r'),axis([-2,2,-2,2])
 xlabel('x1'),ylabel('y1'),legend('states plot','classification hyperplane')
 
 % Model invalidation
-Decision = invalidation_pwa_milp(sys,input,y,0,10000,10000, 'gurobi')
+Decision = invalidation_pwa_milp(sys,input,y,0,0,10000,10000, 'gurobi')
 % what if I give a wrong output sequence?
-Decision = invalidation_pwa_milp(sys,input,y+10,0,10000,10000, 'gurobi')
+Decision = invalidation_pwa_milp(sys,input,y+0.1,0,0,10000,10000, 'gurobi')
+%% include noise in the system
+[y,x,p_noise,m_noise,switchseq]=pwa_sim(sys,input,[],0.1,0.1);
+figure(1),plot(x(1,:),x(2,:)),hold on,plot([2,-2],[-1,3],'r'),axis([-2,2,-2,2])
+xlabel('x1'),ylabel('y1'),legend('states plot','classification hyperplane')
+
+% Model invalidation
+Decision = invalidation_pwa_milp(sys,input,y,0.1,0.1,10000,10000, 'gurobi')
+% lets change to another system
+A(:,:,1) = [1 0.095;-25 -1];
+sys = PWAModel(A,B,C,D,P,M,f,g);
+Decision = invalidation_pwa_milp(sys,input,y,0.1,0.1,10000,10000, 'gurobi')
+
