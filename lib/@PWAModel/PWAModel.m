@@ -4,19 +4,25 @@ classdef PWAModel
     % The class represents a discrete-time piecewise swith affine(PWA) 
     % system model. A general PWA system with a switching
     % sequence sigma has the following form:
-    %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + f[sigma[k]] 
-    %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + g[sigma[k]]
+    %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + f[sigma[k]] + Ep*pn[k]
+    %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + g[sigma[k]]+ Em*mn[k]
     %   sigma[k] = { i | P(i)*x[k] + M(i) <=0 }
     % where pn is the process noise and mn is the measurement noise.
     % Notice that the last nonpositive condition means each element of 
     % vector P(i)*x[k] + M(i) is nonpositive. 
     % 
     % Constructor syntax:
-    %   sys=PWAModel(A,B,C,D,P,M,f,g,state_norm,input_norm);
+    %   sys=PWAModel(A,B,C,D,P,M);
+    %   sys=PWAModel(A,B,C,D,P,M,f);
+    %   sys=PWAModel(A,B,C,D,P,M,f,g);
+    %   sys=PWAModel(A,B,C,D,P,M,f,g,pn_norm, mn_norm);
+    %   sys=PWAModel(A,B,C,D,P,M,f,g,pn_norm, mn_norm, Ep, Em);
+    %   sys=PWAModel(A,B,C,D,P,M,f,g,pn_norm, mn_norm, Ep, Em,input_norm);
+    %   sys=PWAModel(A,B,C,D,P,M,f,g,pn_norm, mn_norm, Ep, Em,input_norm,state_norm);
     %
     % Author: Z. Luo, F. Harirchi and N. Ozay
     % Modified: J. Liu
-    % Date: Aug 15th, 2016
+    % Date: Sep 14th, 2016
 
     % Notations:
     %   n -- number of states
@@ -30,6 +36,16 @@ classdef PWAModel
         % e.g. mode(i).A, mode(i).B, mode(i).C, mode(i).D, mode(i).f, 
         % mode(i).g, mode(i).P and mode(i).M represent the i-th mode.
         mode
+        % An n-by-1 column vector representing the norm types of process
+        % noise.
+        pn_norm
+        % An n_y-by-1 column vector representing the norm types of
+        % measurement noise.
+        mn_norm
+        % Ep is an n-by-n matrix.
+        Ep
+        % Em is an n_y-by-n_y matrix.
+        Em
         % An n-by-1 column vector representing the norm types of states.
         state_norm
         % An n_i-by-n_i column vector representing the norm types of inputs.
@@ -41,7 +57,7 @@ classdef PWAModel
     methods
         
         % If there is only one mode, the model is not switchable.
-        function sys=PWAModel(A,B,C,D,P,M,f,g,input_norm,state_norm)
+        function sys=PWAModel(A,B,C,D,P,M,f,g,pn_norm, mn_norm, Ep, Em,input_norm,state_norm)
             
             % Check A, B, C, D, f, g, P, M.
             if(size(A,3)~=size(B,3)||size(A,3)~=size(C,3)||size(A,3)~=size(D,3)...
@@ -79,16 +95,36 @@ classdef PWAModel
             if(nargin==6)
                 f=zeros(n,n_mode);
                 g=zeros(n_y,n_mode);
+                pn_norm=zeros(n,1)+inf;
+                mn_norm=zeros(n_y,1)+inf;
+                Ep=eye(n);
+                Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
             elseif(nargin==7)
                 g=zeros(n_y,n_mode);
+                pn_norm=zeros(n,1)+inf;
+                mn_norm=zeros(n_y,1)+inf;
+                Ep=eye(n);
+                Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
             elseif(nargin==8)
+                pn_norm=zeros(n,1)+inf;
+                mn_norm=zeros(n_y,1)+inf;
+                Ep=eye(n);
+                Em=eye(n_y);
                 input_norm=zeros(n_i,1)+inf;
                 state_norm=zeros(n,1)+inf;
-            elseif(nargin==9)
+            elseif(nargin==10)
+                Ep=eye(n);
+                Em=eye(n_y);
+                input_norm=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+            elseif(nargin==12)
+                input_norm=zeros(n_i,1)+inf;
+                state_norm=zeros(n,1)+inf;
+            elseif(nargin==13)
                 state_norm=zeros(n,1)+inf;
             end
             
@@ -99,6 +135,18 @@ classdef PWAModel
             if(isempty(f))
                 f=zeros(n,n_mode);
             end
+            if(isempty(pn_norm))
+                pn_norm=zeros(n,1)+inf;
+            end
+            if(isempty(mn_norm))
+                mn_norm=zeros(n_y,1)+inf;
+            end
+            if(isempty(Ep))
+                Ep=eye(n);
+            end
+            if(isempty(Em))
+                Em=eye(n_y);
+            end
             if(isempty(input_norm))
                 input_norm=zeros(n_i,1)+inf;
             end
@@ -107,13 +155,23 @@ classdef PWAModel
             end
             
             % Covert a scalar to a vector having the same entries.
+            if(length(pn_norm)==1&&n>1)
+                pn_norm=ones(n,1)*pn_norm;
+                warning(['Norm type of process noise is a scalar,'...
+                        ' converted to a vector with identical entries.']);
+            end
+            if(length(mn_norm)==1&&n_y>1)
+                mn_norm=ones(n_y,1)*mn_norm;
+                warning(['Norm type of measurement noise is a '...
+                   'scalar, converted to a vector with identical entries.']);
+            end
             if(length(f)==1&&(n+n_mode>2))
-                f=ones(n_y,n_mode)*f;
+                f=ones(n,n_mode)*f;
                 warning(['Additive constant for outputs is a '...
                    'scalar, converted to a matrix with identical entries.']);
             end
             if(length(g)==1&&(n_y+n_mode>2))
-                g=ones(n,n_mode)*g;
+                g=ones(n_y,n_mode)*g;
                 warning(['Additive constant for states is a scalar, '...
                     'converted to a matrix with identical entries.']);
             end
@@ -128,6 +186,15 @@ classdef PWAModel
                     ' to a vector with identical entries.']);
             end
             
+            % Check the noise parameters.
+            if(length(pn_norm)~=n||~isvector(pn_norm))
+                error(['The number of norm types for process noise is not'...
+                      ' correct.']);
+            end
+            if(length(mn_norm)~=n_y||~isvector(mn_norm))
+                error(['The number of norm types for measurement noise is'...
+                      ' not correct.']);
+            end
             
             % Check the state and input parameters.
             if(length(input_norm)~=n_i||~isvector(input_norm))
@@ -157,6 +224,10 @@ classdef PWAModel
                 sys.mode(i).g=g(:,i);
                 sys.mode(i).f=f(:,i);
             end
+            sys.Ep=Ep;
+            sys.Em=Em;
+            sys.pn_norm=pn_norm;
+            sys.mn_norm=mn_norm;
             sys.input_norm=input_norm;
             sys.state_norm=state_norm;
             
