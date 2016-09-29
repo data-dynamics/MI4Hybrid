@@ -1,4 +1,4 @@
-####T-Detectability
+####SMT-based T-Detectability
 
 This extras folder contains two functions and one example, with the following tasks:
 
