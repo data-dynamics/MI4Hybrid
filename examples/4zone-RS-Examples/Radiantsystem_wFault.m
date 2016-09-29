@@ -60,8 +60,6 @@ M(2).C = eye(6);
 M(3).C = eye(6);
 M(4).C = eye(6);
 
-
-
 % define correct A matrix for each mode
 T_s = 300;
 
@@ -81,22 +79,6 @@ sys4= ss(M(4).A,M(4).B,M(4).C,zeros(6,1));
 sys4d = c2d(sys4,T_s);
 SYSWF4 = mergesys(sys4d);
 
-% Discrete system output
-x = [0;0;0;0;0;0];
-u = 1;
-for k = 1:24*12
-dout(k,:) = SYSWF2.C(1,:)*x;
-x = SYSWF2.A*x+SYSWF2.B*u;
-end
-tc = [1:24*3600];
-step(sys2,tc); hold on
-
-% Plot
-
-figure(1)
-plot(0:300:24*3600-1,dout(:,1)','r--')
-     
-     
 % Save weak fault model
 save('4zone_Radiant_weakFaultmat_300s.mat','SYSWF1','SYSWF2','SYSWF3','SYSWF4')
      

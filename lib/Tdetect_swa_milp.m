@@ -227,16 +227,16 @@ U_u = input_high(:,1);
 U_l = input_low(:,1);
 
 %% Optimization variables
-d = binvar(n_mode,nf_mode,T);      % binary variables
-z_c = sdpvar(n,n_mode,nf_mode,T);  % current state
-z_f = sdpvar(n,n_mode,nf_mode,T);  % future state
-zf_c = sdpvar(n,n_mode,nf_mode,T);  % fault current state
-zf_f = sdpvar(n,n_mode,nf_mode,T);  % fault future state
-theta = sdpvar(n_y,n_mode,nf_mode,T); % measurement noise (system)
-thetaf = sdpvar(n_y,n_mode,nf_mode,T); % measurement noise (fault)
-eta = sdpvar(n,n_mode,nf_mode,T); % process noise (system)
-etaf = sdpvar(n,n_mode,nf_mode,T); % process noise (fault)
-tt = sdpvar(n_u,n_mode,nf_mode,T); % input 
+d = binvar(n_mode,nf_mode,T,'full');      % binary variables
+z_c = sdpvar(n,n_mode,nf_mode,T,'full');  % current state
+z_f = sdpvar(n,n_mode,nf_mode,T,'full');  % future state
+zf_c = sdpvar(n,n_mode,nf_mode,T,'full');  % fault current state
+zf_f = sdpvar(n,n_mode,nf_mode,T,'full');  % fault future state
+theta = sdpvar(n_y,n_mode,nf_mode,T,'full'); % measurement noise (system)
+thetaf = sdpvar(n_y,n_mode,nf_mode,T,'full'); % measurement noise (fault)
+eta = sdpvar(n,n_mode,nf_mode,T,'full'); % process noise (system)
+etaf = sdpvar(n,n_mode,nf_mode,T,'full'); % process noise (fault)
+tt = sdpvar(n_u,n_mode,nf_mode,T,'full'); % input 
 
 Constraint = [];
 
@@ -245,20 +245,11 @@ for t = 1:T    % time index
     for sys_ind = 1: n_mode  % system mode index
         for flt_ind = 1: nf_mode  % fault mode index
             
-         Constraint = [Constraint z_f(:,sys_ind,flt_ind,t) - ...
-             Mode(sys_ind).A * z_c(:,sys_ind,flt_ind,t) - Mode(sys_ind).B...
-             * tt(:,sys_ind,flt_ind,t) - eta(:,sys_ind,flt_ind,t)   == ...
-             d(sys_ind,flt_ind,t)* Mode(sys_ind).f];
+         Constraint = [Constraint, z_f(:,sys_ind,flt_ind,t)-Mode(sys_ind).A*z_c(:,sys_ind,flt_ind,t)-Mode(sys_ind).B*tt(:,sys_ind,flt_ind,t)-eta(:,sys_ind,flt_ind,t)==d(sys_ind,flt_ind,t)*Mode(sys_ind).f];
              
-         Constraint = [Constraint zf_f(:,sys_ind,flt_ind,t) - ...
-             fMode(flt_ind).A * zf_c(:,sys_ind,flt_ind,t) - fMode(flt_ind).B...
-             * tt(:,sys_ind,flt_ind,t)- etaf(:,sys_ind,flt_ind,t) == ...
-             d(sys_ind,flt_ind,t)* (fMode(flt_ind).f)];
+         Constraint = [Constraint, zf_f(:,sys_ind,flt_ind,t)-fMode(flt_ind).A*zf_c(:,sys_ind,flt_ind,t)-fMode(flt_ind).B*tt(:,sys_ind,flt_ind,t)-etaf(:,sys_ind,flt_ind,t)==d(sys_ind,flt_ind,t)*(fMode(flt_ind).f)];
             
-         Constraint = [Constraint Mode(sys_ind).C * z_f(:,sys_ind,flt_ind,t)...
-             + theta(:,sys_ind,flt_ind,t)+ d(sys_ind,flt_ind,t)*Mode(sys_ind).g ...
-             ==  fMode(flt_ind).C * zf_f(:,sys_ind,flt_ind,t) + ...
-             thetaf(:,sys_ind,flt_ind,t)+ d(sys_ind,flt_ind,t)*fMode(flt_ind).g];
+         Constraint = [Constraint, Mode(sys_ind).C*z_f(:,sys_ind,flt_ind,t)+theta(:,sys_ind,flt_ind,t)+d(sys_ind,flt_ind,t)*Mode(sys_ind).g==fMode(flt_ind).C*zf_f(:,sys_ind,flt_ind,t)+thetaf(:,sys_ind,flt_ind,t)+d(sys_ind,flt_ind,t)*fMode(flt_ind).g];
         end
     end
 end
@@ -269,19 +260,16 @@ for t = 1:T
 end
 
 % same initial condition constraint
-Constraint = [Constraint sum(sum(z_c(:,:,:,1),3),2)==...
-    sum(sum(zf_c(:,:,:,1),3),2)];
+Constraint = [Constraint sum(sum(z_c(:,:,:,1),3),2)==sum(sum(zf_c(:,:,:,1),3),2)];
 
 % current and future state constraints
 for t = 1:T-1
     for flt_ind = 1:nf_mode
-        Constraint = [Constraint sum(z_c(:,:,flt_ind,t+1),2)==...
-            sum(z_f(:,:,flt_ind,t),2)];
+        Constraint = [Constraint sum(z_c(:,:,flt_ind,t+1),2)==sum(z_f(:,:,flt_ind,t),2)];
     end
 
     for sys_ind = 1:n_mode
-        Constraint = [Constraint sum(zf_c(:,sys_ind,:,t+1),3)==...
-            sum(zf_f(:,sys_ind,:,t),3)];
+        Constraint = [Constraint sum(zf_c(:,sys_ind,:,t+1),3)==sum(zf_f(:,sys_ind,:,t),3)];
     end
 end
 % admissible set constraints
@@ -290,15 +278,15 @@ for t = 1:T    % time index
         for flt_ind = 1: nf_mode  % fault mode index
             for i = 1:n_y
             Constraint = [Constraint  norm(theta(i,sys_ind,flt_ind,t),inf)<=...
-                d(sys_ind,flt_ind,t)* eps(i)];
+                d(sys_ind,flt_ind,t)*eps(i)];
             Constraint = [Constraint  norm(thetaf(i,sys_ind,flt_ind,t),inf)<=...
-                d(sys_ind,flt_ind,t)* epsf(i)];
+                d(sys_ind,flt_ind,t)*epsf(i)];
             end
             for i = 1:n
             Constraint = [Constraint  norm(eta(i,sys_ind,flt_ind,t),inf)<=...
-                d(sys_ind,flt_ind,t)* PNB(i)];
+                d(sys_ind,flt_ind,t)*PNB(i)];
             Constraint = [Constraint  norm(etaf(i,sys_ind,flt_ind,t),inf)<=...
-                d(sys_ind,flt_ind,t)* PNBf(i)];
+                d(sys_ind,flt_ind,t)*PNBf(i)];
             end
         end
     end

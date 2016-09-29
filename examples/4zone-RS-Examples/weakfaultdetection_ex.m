@@ -1,4 +1,4 @@
-%% Example Radiant System Fault Detection (Section 4.3 in paper)
+%% Example Radiant System WEAK Fault Detection
 
 clear,close all
 addpath('../../lib/')
@@ -43,13 +43,12 @@ g_f = zeros(6,4);
 
 delta_f = [zeros(2,4);0.1*f_f(3:6,:)];
 
-%% Generate data from normal system
+%% Generate data from faulty system
 
 x = [17;17;17;17;17;17];
 SW = [1; 1];
-% y(:,1) = [15;15;15;15;15;15];
-% x = A(:,:,1)*x + g(:,1);
-% y(:,2) = C(:,:,1)*x + f(:,1);
+
+% Data from modes 1 & 2
 for i = 1:30
     mode = randi(2);
  x = A_f(:,:,mode)*x +f_f(:,mode)+ delta_f(:,mode)*(rand-0.5)*1;
@@ -57,7 +56,7 @@ for i = 1:30
  SW = [SW;mode];
 end
 
-
+% single data point from modes 3 & 4 (where fault is observable)
 for i = 31:31
     mode = randi(2)+2;
  x = A_f(:,:,mode)*x +f_f(:,mode)+ delta_f(:,mode)*(rand-0.5)*1;
@@ -65,6 +64,7 @@ for i = 31:31
  SW = [SW;mode];
 end
 
+% Data points from modes 1 & 2
 for i = 32:40
     mode = randi(2);
  x = A_f(:,:,mode)*x +f_f(:,mode)+ delta_f(:,mode)*(rand-0.5)*1;
@@ -72,37 +72,41 @@ for i = 32:40
  SW = [SW;mode];
 end
 
+% Data points from any modes
 for i = 41:75
     mode = randi(4);
  x = A_f(:,:,mode)*x +f_f(:,mode)+ delta_f(:,mode)*(rand-0.5)*1;
  y(:,i) = C_f(:,:,mode)*x ;
  SW = [SW;mode];
 end
-eps = 0.05;
+
 % Add measurement noise
+eps = 0.05;
 w = [(rand(6,75)-0.5)*2*eps]; 
 ym = y + w;
 
+% Time Horizon 8
 T = 8;
-% Dec = [];
+
+% Start making decisions after 8th sample
 Dec = zeros(7,1);
-for t = 8:75  
-    
+
+% Receding horizon model invalidation
+for t = 8:75    
 output = ym(:,t-T+1:t);
 input = zeros(1,T); % does not matter as b = 0
 sys = StateSpace(A,B,C,D,f,g);   % define sys in StateSpace class
-% end
 t
-
-Decision = invalidation_uswa_milp(sys,delta,input,output,eps,1000,[15 19]',0.5, 'cplex')
+Decision = invalidation_uswa_milp_modified(sys,delta,input,output,eps,1000,[15 19]',0.5, 'cplex')
 if strcmp(Decision,'The model is not invalidated')
-    flag = 0
+    flag = 0; % Detection signal
 else
-    flag = 1;
+    flag = 1; % Detection signal
 end
 Dec = [Dec; flag];
 end
 
+%% Plot Results
 Labels = {'Supply Water 1','Supply Water 2', 'Room 1', 'Room 2', 'Room 3', 'Room 4'};
 figure(1)
 set(1,'position',[10 10 2100 600])
@@ -113,13 +117,6 @@ order = [1 2 4 5 3 6];
 for i = [1 3 2 6]
 subplot(2,3,order(count))
 plot(1/12*[1:75],ym(i,:),'b','LineWidth',3)
-% hold on; plot(1/12*43*ones(1,75),[15:1/75*4:19-4/75],'r')
-% hold on; plot(1/12*46*ones(1,75),[15:1/75*4:19-4/75],'--','color',[0 0.5 0])
-% x = [0.2 0.25];
-% y = [0.6 0.5];
-% % x = [1/12*18 1/12*20];
-% % y = [ym(i,20)-0.5 ym(i,20)];
-% annotation('textarrow',x,y,'String','Fault')
 xlabel('Hours','FontSize',20,'FontWeight','bold')
 ylabel('Celsius','FontSize',20,'FontWeight','bold')
 ylim([14 18]);
@@ -141,11 +138,5 @@ set(h,'FontSize',14)
 set(gca,'FontSize',20)
 end
 eval(['print -f1 -dpdf ','results_receding_weak.pdf'])
-% 
-% h =legend('Normal1','Normal2','Faulty');
-% % h =legend('Noisy Output','Clean Output');
-% 
-% 
-% set(h,'FontSize',16)
 
 

@@ -68,7 +68,7 @@ t1 = tic;
 W = 3;
 for T = W+1:10
     T
-[Decision] = wTdetect_uuswa_milp(SYS,SYS_f,delta,delta_f,T,W,mn_bound, ...
+[Decision] = wTdetect_uswa_milp(SYS,SYS_f,delta,delta_f,T,W,mn_bound, ...
     pn_bound,input_bound,state_bound, un_bound, solver)
 DD{T,kk} = Decision;
 end
