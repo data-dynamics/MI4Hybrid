@@ -74,7 +74,8 @@ For Switched Affine and Reggressive Model Invalidation and T-Detectability:
 #####In the folder "extras":
 
 Extra files are inside this folder.
-1. SMT-based T-Detectability functions are located here.
+
+* SMT-based T-Detectability functions are located here.
 
 
 ####Related publications:
