@@ -5,11 +5,13 @@ MI4Hybrid is a model invalidation toolbox for hybrid systems.
 ####Installation Instructions:
 
 This toolbox can be used in MATLAB with the following necessary packages/softwares installed:
+* [YALMIP](http://users.isy.liu.se/johanl/yalmip/)
 
-1. [YALMIP](http://users.isy.liu.se/johanl/yalmip/)
-2. [CPLEX](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/)
-3. [SparsePOP] (http://www.is.titech.ac.jp/~kojima/SparsePOP/)
+For Polynomial State-Space Model Invalidation and T-Detectability: 
+* [SparsePOP] (http://www.is.titech.ac.jp/~kojima/SparsePOP/)
 
+For Polynomial State-Space Model Invalidation and T-Detectability: 
+* [CPLEX](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/) or [GUROBI](http://www.gurobi.com/)
  
 ####Contents:
 
