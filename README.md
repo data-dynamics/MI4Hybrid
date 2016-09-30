@@ -10,7 +10,7 @@ This toolbox can be used in MATLAB with the following necessary packages/softwar
 For Polynomial State-Space Model Invalidation and T-Detectability: 
 * [SparsePOP] (http://www.is.titech.ac.jp/~kojima/SparsePOP/)
 
-For Polynomial State-Space Model Invalidation and T-Detectability: 
+For Switched State-Space Model Invalidation and T-Detectability: 
 * [CPLEX](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/) or [GUROBI](http://www.gurobi.com/)
  
 ####Contents:
