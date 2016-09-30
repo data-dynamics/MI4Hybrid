@@ -3,18 +3,18 @@ classdef StateSpace
     % The class represents a discrete-time (possibly switched) state-space
     % model. A general discrete-time state-space model with a switching
     % sequence sigma has the following form:
-    %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + g[sigma[k]] + Ep*pn[k]
-    %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + f[sigma[k]]
+    %   x[k+1] = A[sigma[k]]*x[k] + B[sigma[k]]*u[k] + f[sigma[k]] + Ep*pn[k]
+    %   y[k] = C[sigma[k]]*x[k] + D[sigma[k]]*u[k] + g[sigma[k]]
     %   y_n[k] = y[k] + Em*mn[k]
     % where pn is the process noise and mn is the measurement noise.
     %
     % Constructor syntax:
     %   sys=StateSpace(A,B,C,D);
-    %   sys=StateSpace(A,B,C,D,g,f);
-    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm);
-    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em);
-    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,input_norm);
-    %   sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,input_norm,...
+    %   sys=StateSpace(A,B,C,D,f,g);
+    %   sys=StateSpace(A,B,C,D,f,g,pn_norm,mn_norm);
+    %   sys=StateSpace(A,B,C,D,f,g,pn_norm,mn_norm,Ep,Em);
+    %   sys=StateSpace(A,B,C,D,f,g,pn_norm,mn_norm,Ep,Em,input_norm);
+    %   sys=StateSpace(A,B,C,D,f,g,pn_norm,mn_norm,Ep,Em,input_norm,...
     %                  state_norm);
     %
     % Author: Z. Luo, F. Harirchi and N. Ozay
@@ -53,7 +53,7 @@ classdef StateSpace
     methods
         
         % If there is only one mode, the model is not switchable.
-        function sys=StateSpace(A,B,C,D,g,f,pn_norm,mn_norm,Ep,Em,...
+        function sys=StateSpace(A,B,C,D,f,g,pn_norm,mn_norm,Ep,Em,...
                 input_norm,state_norm)
             
             % Check A, B, C, and D.
@@ -82,8 +82,8 @@ classdef StateSpace
             
             % Set up default values if parameters are not specified.
             if(nargin==4)
-                g=zeros(n,n_mode);
-                f=zeros(n_y,n_mode);
+                f=zeros(n,n_mode);
+                g=zeros(n_y,n_mode);
                 pn_norm=zeros(n,1)+inf;
                 mn_norm=zeros(n_y,1)+inf;
                 Ep=eye(n);
@@ -110,11 +110,11 @@ classdef StateSpace
             end
             
             % Set up default values for empty inputs.
-            if(isempty(g))
-                g=zeros(n,n_mode);
-            end
             if(isempty(f))
-                f=zeros(n_y,n_mode);
+                f=zeros(n,n_mode);
+            end
+            if(isempty(g))
+                g=zeros(n_y,n_mode);
             end
             if(isempty(pn_norm))
                 pn_norm=zeros(n,1)+inf;
@@ -146,13 +146,13 @@ classdef StateSpace
                 warning(['Norm type of measurement noise is a '...
                    'scalar, converted to a vector with identical entries.']);
             end
-            if(length(f)==1&&(n_y+n_mode>2))
-                f=ones(n_y,n_mode)*f;
+            if(length(g)==1&&(n_y+n_mode>2))
+                g=ones(n_y,n_mode)*g;
                 warning(['Additive constant for outputs is a '...
                    'scalar, converted to a matrix with identical entries.']);
             end
-            if(length(g)==1&&(n+n_mode>2))
-                g=ones(n,n_mode)*g;
+            if(length(f)==1&&(n+n_mode>2))
+                f=ones(n,n_mode)*f;
                 warning(['Additive constant for states is a scalar, '...
                     'converted to a matrix with identical entries.']);
             end
@@ -194,11 +194,11 @@ classdef StateSpace
             end
             
             % Check the constant f and g.
-            if(size(f,1)~=n_y||size(f,2)~=n_mode)
-                error('The additive constant (notation f) is not valid.');
-            end
-            if(size(g,1)~=n||size(g,2)~=n_mode)
+            if(size(g,1)~=n_y||size(g,2)~=n_mode)
                 error('The additive constant (notation g) is not valid.');
+            end
+            if(size(f,1)~=n||size(f,2)~=n_mode)
+                error('The additive constant (notation f) is not valid.');
             end
             
             % Assign values after checking.
@@ -207,8 +207,8 @@ classdef StateSpace
                 sys.mode(i).B=B(:,:,i);
                 sys.mode(i).C=C(:,:,i);
                 sys.mode(i).D=D(:,:,i);
-                sys.mode(i).g=g(:,i);
                 sys.mode(i).f=f(:,i);
+                sys.mode(i).g=g(:,i);
             end
             sys.Ep=Ep;
             sys.Em=Em;

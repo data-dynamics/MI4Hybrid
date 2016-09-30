@@ -1,4 +1,4 @@
-function [Decision,sol,cz,fz,zc_C] = invalidation_swa_milp(SYS,input,output, ...
+function [Decision,sol,cz,fz,zc_C] = invalidation_uswa_milp(SYS,N,input,output, ...
     mn_bnd,pn_bnd,input_low, input_high, state_low, state_high,solver)
 
 % This function implements MILP-based T-detectability approach for the
@@ -65,6 +65,24 @@ T = size(input,2);
 
 
 %% Set up default values for empty paramters
+if(isempty(N))
+    N_A = zeros(n,n,n_mode);
+    N_B = zeros(n,n_u,n_mode);
+    N_C = zeros(n_y,n,n_mode);
+    N_D = zeros(n_y,n_u,n_mode);
+    N_f = zeros(n,n_mode);
+    N_g = zeros(n_y,n_mode);
+    N = StateSpace(N_A,N_B,N_C,N_D,N_f,N_g);
+else 
+    for sys_ind = 1:n_mode
+        N_A(:,:,sys_ind) = N.mode(sys_ind).A;
+        N_B(:,:,sys_ind) = N.mode(sys_ind).B;
+        N_C(:,:,sys_ind) = N.mode(sys_ind).C;
+        N_D(:,:,sys_ind) = N.mode(sys_ind).D;
+        N_f(:,sys_ind) = N.mode(sys_ind).f;
+        N_g(:,sys_ind) = N.mode(sys_ind).g;
+    end
+end
 if(isempty(mn_bnd))
     mn_bnd=zeros(n_y,1);
 end
@@ -87,6 +105,10 @@ if(isempty(solver))
     solver='cplex';
 end
 
+%% Check uncertainty normalization matrices
+if(strcmp(N.mark,'ss')~=1&&strcmp(N.mark,'swss')~=1)
+    error('The normalization matrices of system model must be a state-space model.');
+end
 
 %% Convert scalars to vectors
 if(size(mn_bnd,1)==1&&n_y>1)
@@ -193,6 +215,13 @@ for i = 1: n_mode
     Mode(i).D = SYS.mode(i).D;
     Mode(i).f = SYS.mode(i).f;
     Mode(i).g = SYS.mode(i).g;
+    % Uncertainty normalization matrices
+    Mode(i).N_A = N.mode(i).A;
+    Mode(i).N_B = N.mode(i).B;
+    Mode(i).N_C = N.mode(i).C;
+    Mode(i).N_D = N.mode(i).D;
+    Mode(i).N_f = N.mode(i).f;
+    Mode(i).N_g = N.mode(i).g;
 end
 
 M_u = state_high(:,1);
@@ -206,7 +235,7 @@ U_l = input_low(:,1);
 count = 0;
 for t = 1:T
     for i = 1:n_u
-        if ((input(i,t)<=U_l(i))||(input(i,t)>=U_u(i)))
+        if ((input(i,t)<= U_l(i))||(input(i,t)>= U_u(i)))
             count = count+1;
         end
     end
@@ -218,11 +247,25 @@ end
 %% Optimization variables
 % binary variables
 d = binvar(n_mode,T,'full');
+d_A = binvar(n,n,4,n_mode,T,'full');
+d_C = binvar(n_y,n,4,n_mode,T,'full');
 % real variables
 cz = sdpvar(n,n_mode,T,'full');  % current state
 fz = sdpvar(n,n_mode,T,'full');  % future state
 theta = sdpvar(n_y,n_mode,T,'full'); % measurement noise (system)
 eta = sdpvar(n,n_mode,T,'full'); % process noise (system)
+
+% Uncertainty variables for system model
+DA = sdpvar(n,n,n_mode,T,'full');
+DB = sdpvar(n,n_u,n_mode,T,'full');
+DC = sdpvar(n_y,n,n_mode,T,'full');
+DD = sdpvar(n_y,n_u,n_mode,T,'full');
+Df = sdpvar(n,n_mode,T,'full');
+Dg = sdpvar(n_y,n_mode,T,'full');
+SA = sdpvar(n,n,4,n_mode,T,'full');
+SC = sdpvar(n_y,n,4,n_mode,T,'full');
+zc_A = sdpvar(n,4,n_mode,T,'full');
+zc_C = sdpvar(n,4,n_mode,T,'full');
 
 %% Creating Constraints
 Constraint = [];
@@ -230,9 +273,9 @@ Constraint = [];
 %% state and output equation constraints:
 for t = 2:T-1    % time index
     for sys_ind = 1: n_mode  % system mode index
-        Constraint = [Constraint, fz(:,sys_ind,t)-Mode(sys_ind).A*cz(:,sys_ind,t)==d(sys_ind,t)*Mode(sys_ind).B*input(:,t)+eta(:,sys_ind,t)+d(sys_ind,t)*Mode(sys_ind).f];
+        Constraint = [Constraint, fz(:,sys_ind,t)-Mode(sys_ind).A*cz(:,sys_ind,t)==sum(DA(:,:,sys_ind,t),2)+d(sys_ind,t)*Mode(sys_ind).B*input(:,t)+DB(:,:,sys_ind,t)*input(:,t)+eta(:,sys_ind,t)+Df(:,sys_ind,t)+d(sys_ind,t)*Mode(sys_ind).f];
         
-        Constraint = [Constraint, Mode(sys_ind).C*fz(:,sys_ind,t)+d(sys_ind,t)*Mode(sys_ind).D*input(:,t)+d(sys_ind,t)*Mode(sys_ind).g+theta(:,sys_ind,t)==d(sys_ind,t)*output(:,t)];
+        Constraint = [Constraint, Mode(sys_ind).C*fz(:,sys_ind,t)+sum(DC(:,:,sys_ind,t),2)+d(sys_ind,t)*Mode(sys_ind).D*input(:,t)+DD(:,:,sys_ind,t)*input(:,t)+d(sys_ind,t)*Mode(sys_ind).g+theta(:,sys_ind,t)==d(sys_ind,t)*output(:,t)-Dg(:,sys_ind,t)];
     end
 end
 
@@ -270,6 +313,123 @@ for t = 1:T    % time index
         end
     end
 end
+
+%% Uncertainty constraints
+%% B,D,f and g matrices
+for t = 1:T    % time index
+    for sys_ind = 1: n_mode  % system mode index
+        for i = 1:n
+            Constraint = [Constraint, -d(sys_ind,t)*abs(Mode(sys_ind).N_f(i))<=...
+                Df(i,sys_ind,t)];
+            Constraint = [Constraint Df(i,sys_ind,t)<=...
+                d(sys_ind,t)*abs(Mode(sys_ind).N_f(i))];
+        end
+        for i = 1:n_y
+            Constraint = [Constraint, -d(sys_ind,t)*abs(Mode(sys_ind).N_g(i))<=...
+                Dg(i,sys_ind,t)];
+            Constraint = [Constraint, Dg(i,sys_ind,t)<=...
+                d(sys_ind,t)*abs(Mode(sys_ind).N_g(i))];
+        end
+        for i = 1:n
+            for j=1:n_u
+                Constraint = [Constraint, -d(sys_ind,t)*abs(Mode(sys_ind).N_B(i,j))<=...
+                    DB(i,j,sys_ind,t)];
+                Constraint = [Constraint, DB(i,j,sys_ind,t)<=...
+                    d(sys_ind,t)*abs(Mode(sys_ind).N_B(i,j))];
+            end
+        end
+        
+        for i = 1:n_y
+            for j=1:n_u
+                Constraint = [Constraint, -d(sys_ind,t)*abs(Mode(sys_ind).N_D(i,j))<=...
+                    DD(i,j,sys_ind,t)];
+                Constraint = [Constraint, DD(i,j,sys_ind,t)<=...
+                    d(sys_ind,t)*abs(Mode(sys_ind).N_D(i,j))];
+            end
+        end
+    end
+end
+
+%% A and C matrices
+if (isequal(N_A, zeros(n,n,n_mode)));
+    Constraint = [Constraint,DA == zeros(n,n,n_mode,T)];
+else
+for t = 1:T-1    % time index
+    for sys_ind = 1: n_mode  % system mode index
+        %% System Uncertainty
+        % Uncertainty for A
+        for j = 1:n
+            for i= 1:n
+                Constraint = [Constraint, SA(i,j,1,sys_ind,t)>=0, ...
+                    zc_A(j,1,sys_ind,t)>=0, ...
+                    SA(i,j,1,sys_ind,t)-abs(Mode(sys_ind).N_A(i,j))*...
+                    zc_A(j,1,sys_ind,t)<=0];
+                Constraint = [Constraint, SA(i,j,2,sys_ind,t)<=0, ...
+                    zc_A(j,2,sys_ind,t)<=0, ...
+                    SA(i,j,2,sys_ind,t)-abs(Mode(sys_ind).N_A(i,j))*...
+                    zc_A(j,2,sys_ind,t)>=0];
+                Constraint = [Constraint, SA(i,j,3,sys_ind,t)>=0, ...
+                    zc_A(j,3,sys_ind,t)<=0, ...
+                    SA(i,j,3,sys_ind,t)+abs(Mode(sys_ind).N_A(i,j))*...
+                    zc_A(j,3,sys_ind,t)<=0];
+                Constraint = [Constraint, SA(i,j,4,sys_ind,t)<=0, ...
+                    zc_A(j,4,sys_ind,t)>=0, ...
+                    SA(i,j,4,sys_ind,t)+abs(Mode(sys_ind).N_A(i,j))*...
+                    zc_A(j,4,sys_ind,t)>=0];
+                
+                for q=1:4
+                    Constraint = [Constraint, SA(i,j,q,sys_ind,t)>=d_A(i,j,q,sys_ind,t)*M_l(j)*abs(Mode(sys_ind).N_A(i,j))];
+                    Constraint = [Constraint, SA(i,j,q,sys_ind,t)<=d_A(i,j,q,sys_ind,t)*M_u(j)*abs(Mode(sys_ind).N_A(i,j))];                     
+                end
+                Constraint = [Constraint, sum(SA(i,j,:,sys_ind,t))==DA(i,j,sys_ind,t)];
+                Constraint = [Constraint, sum(d_A(i,j,:,sys_ind,t))==d(sys_ind,t)];
+               
+            end
+            Constraint = [Constraint, sum(zc_A(j,:,sys_ind,t))==cz(j,sys_ind,t)];
+            Constraint = [Constraint, sum(zc_A(j,:,sys_ind,t))>=d(sys_ind,t)*M_l(j)];
+            Constraint = [Constraint, sum(zc_A(j,:,sys_ind,t))<=d(sys_ind,t)*M_u(j)];
+        end
+    end
+end
+end
+if (isequal(N_C, zeros(n_y,n,n_mode)));
+    Constraint = [Constraint, DC == zeros(n_y,n,n_mode,T)];
+else
+for t = 1:T-1    % time index
+    for sys_ind = 1: n_mode  % system mode index        
+%       Uncertainty for C
+        for j = 1:n
+            for i= 1:n_y
+                Constraint = [Constraint, SC(i,j,1,sys_ind,t)>=0, ...
+                    zc_C(j,1,sys_ind,t)>=0, SC(i,j,1,sys_ind,t)- ...
+                    abs(Mode(sys_ind).N_C(i,j))*zc_C(j,1,sys_ind,t)<=0];
+                Constraint = [Constraint, SC(i,j,2,sys_ind,t)<=0, ...
+                    zc_C(j,2,sys_ind,t)<=0, SC(i,j,2,sys_ind,t)- ...
+                    abs(Mode(sys_ind).N_C(i,j))* zc_C(j,2,sys_ind,t)>=0];
+                Constraint = [Constraint, SC(i,j,3,sys_ind,t)>=0, ...
+                    zc_C(j,3,sys_ind,t)<=0, SC(i,j,3,sys_ind,t)+ ...
+                    abs(Mode(sys_ind).N_C(i,j))* zc_C(j,3,sys_ind,t)<=0];
+                Constraint = [Constraint, SC(i,j,4,sys_ind,t)<=0, ...
+                    zc_C(j,4,sys_ind,t)>=0, SC(i,j,4,sys_ind,t)+ ...
+                    abs(Mode(sys_ind).N_C(i,j))*zc_C(j,4,sys_ind,t)>=0];
+                for q=1:4
+                    Constraint = [Constraint, SC(i,j,q,sys_ind,t)<=...
+                        d_C(i,j,q,sys_ind,t)*M_u(j)*abs(Mode(sys_ind).N_C(i,j)), ...
+                        SC(i,j,q,sys_ind,t)>= d_C(i,j,q,sys_ind,t)*...
+                        M_l(j)*abs(Mode(sys_ind).N_C(i,j))];
+                end
+                Constraint = [Constraint, sum(SC(i,j,:,sys_ind,t))==DC(i,j,sys_ind,t)];
+                Constraint = [Constraint, sum(d_C(i,j,:,sys_ind,t))==d(sys_ind,t)];
+            end 
+            Constraint = [Constraint, sum(zc_C(j,:,sys_ind,t))==fz(j,sys_ind,t)];
+            Constraint = [Constraint, sum(zc_C(j,:,sys_ind,t))>=d(sys_ind,t)*M_l(j)];
+            Constraint = [Constraint, sum(zc_C(j,:,sys_ind,t))<=d(sys_ind,t)*M_u(j)];
+        end
+          
+    end
+end
+end
+
 
 %% Setting up Options
 options = sdpsettings('verbose',0,'solver',solver);
