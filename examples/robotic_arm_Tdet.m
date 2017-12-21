@@ -1,7 +1,7 @@
 % Fault detection for a robotic arm (two-link planar robot)
 % Equation 4.11 on page 165 of Richard Murray's book on
 % A Mathematical Introduction to Robotic Manipulation
-%
+% Use this file in conjunction with the model generation file to get the PWA model
 %
 clear,close all,clc
 
