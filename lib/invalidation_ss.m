@@ -116,10 +116,10 @@ M=[M1;M2];
 % Construct the vector b using I/O data as well as the system parameters.
 % Construct the first part of b.
 b1=output(:,1:T)-sys.mode.D*input(:,1:T)-...
-    bsxfun(@plus,zeros(n_y,T),sys.mode.f);
+    bsxfun(@plus,zeros(n_y,T),sys.mode.g);
 b1=reshape(b1,[],1);
 % Construct the second part of b.
-b2=sys.mode.B*input(:,1:T-1)+bsxfun(@plus,zeros(n,T-1),sys.mode.g);
+b2=sys.mode.B*input(:,1:T-1)+bsxfun(@plus,zeros(n,T-1),sys.mode.f);
 b2=reshape(b2,[],1);
 % Combine b1 and b2 to obtain b.
 b=[b1;b2];
